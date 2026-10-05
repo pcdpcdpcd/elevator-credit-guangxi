@@ -1,0 +1,1178 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>电梯维保单位信用评分</title>
+<style>
+  :root{--blue:#1F4E78;--blue2:#2E75B6;--bg:#f2f4f7;--card:#fff;--line:#e3e8ef;}
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  body{margin:0;font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:#1f2733;font-size:15px;}
+  header{background:var(--blue);color:#fff;padding:14px 16px;position:sticky;top:0;z-index:10;}
+  header h1{margin:0;font-size:16px;font-weight:600;line-height:1.3;}
+  header p{margin:3px 0 0;font-size:12px;opacity:.85;}
+  .tabs{display:flex;position:sticky;top:52px;z-index:10;background:#fff;border-bottom:1px solid var(--line);}
+  .tabs button{flex:1;border:0;background:none;padding:12px 0;font-size:14px;color:#5b6675;border-bottom:2px solid transparent;}
+  .tabs button.active{color:var(--blue);border-bottom-color:var(--blue);font-weight:600;}
+  .page{display:none;padding:14px;padding-bottom:90px;}
+  .page.active{display:block;}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,.04);}
+  .card.tight{padding:0;overflow:auto;}
+  label{display:block;font-size:13px;color:#5b6675;margin:10px 0 5px;}
+  label:first-child{margin-top:0;}
+  input,select,textarea{width:100%;padding:11px 10px;border:1px solid #cdd5e0;border-radius:9px;font-size:15px;background:#fff;color:#1f2733;}
+  textarea{resize:vertical;min-height:54px;}
+  .row2{display:flex;gap:10px;}
+  .row2>div{flex:1;}
+  .btn{width:100%;background:var(--blue);color:#fff;border:0;border-radius:10px;padding:13px;font-size:16px;font-weight:600;margin-top:14px;}
+  .btn:active{background:var(--blue2);}
+  .btn-ghost{background:#eef2f7;color:var(--blue);}
+  .seg{display:flex;gap:8px;}
+  .seg button{flex:1;padding:11px;border:1px solid #cdd5e0;border-radius:9px;background:#fff;font-size:15px;color:#5b6675;}
+  .seg button.on{background:var(--blue);color:#fff;border-color:var(--blue);}
+  .seg3{display:flex;gap:6px;flex-wrap:wrap;}
+  .seg3 button{padding:8px 10px;border:1px solid #cdd5e0;border-radius:9px;background:#fff;font-size:13px;color:#5b6675;}
+  .seg3 button.on{background:var(--blue);color:#fff;border-color:var(--blue);}
+  .hint{font-size:12px;color:#8b95a5;margin-top:6px;line-height:1.5;}
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  th,td{padding:9px 8px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{background:#f7f9fc;color:#5b6675;font-weight:600;position:sticky;top:0;}
+  .lv{display:inline-block;min-width:22px;text-align:center;border-radius:6px;padding:2px 7px;font-weight:700;color:#fff;font-size:12px;}
+  .lvA{background:#2e9e5b;} .lvB{background:#2E75B6;} .lvC{background:#e0a800;} .lvD{background:#c0392b;}
+  .pill{display:inline-block;padding:1px 7px;border-radius:20px;font-size:11px;background:#eef2f7;color:#5b6675;}
+  .neg{color:#c0392b;font-weight:600;} .pos{color:#2e9e5b;font-weight:600;}
+  .del{color:#c0392b;border:0;background:none;font-size:13px;padding:4px;}
+  .ev{padding:10px 0;border-bottom:1px solid var(--line);}
+  .ev .t{font-size:14px;font-weight:600;}
+  .ev .m{font-size:12px;color:#8b95a5;margin-top:3px;line-height:1.5;}
+  .toast{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,.82);color:#fff;padding:12px 18px;border-radius:10px;font-size:14px;z-index:99;display:none;max-width:80%;text-align:center;}
+  .stat{display:flex;gap:8px;margin-bottom:12px;}
+  .stat .b{flex:1;background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px;text-align:center;}
+  .stat .b b{font-size:20px;display:block;}
+  .stat .b span{font-size:11px;color:#8b95a5;}
+  .fab{position:fixed;right:16px;bottom:70px;background:var(--blue);color:#fff;border:0;border-radius:50%;width:54px;height:54px;font-size:24px;box-shadow:0 3px 10px rgba(0,0,0,.25);z-index:20;}
+  .seg2{display:flex;gap:8px;margin-bottom:10px;}
+  .seg2 button{flex:1;padding:9px;border:1px solid #cdd5e0;border-radius:9px;background:#fff;font-size:13px;color:#5b6675;}
+  .seg2 button.on{background:var(--blue);color:#fff;border-color:var(--blue);}
+  tr.std-row{cursor:pointer;}
+  tr.std-row td.num{font-weight:600;color:var(--blue);white-space:nowrap;}
+  tr.std-row td.cnt{white-space:nowrap;text-align:center;}
+  tr.det td{background:#fbfcfe;padding:0 12px 10px;font-size:12px;color:#5b6675;}
+  tr.det ul{margin:6px 0 0;padding-left:16px;}
+  tr.det li{margin-bottom:4px;line-height:1.5;}
+  .badge{display:inline-block;min-width:26px;text-align:center;border-radius:20px;padding:2px 8px;font-size:12px;font-weight:600;background:#eef2f7;color:#5b6675;}
+  .badge.hot{background:#fde8e6;color:#c0392b;}
+  th.sortable{cursor:pointer;user-select:none;white-space:nowrap;}
+  th.sortable:hover{color:var(--blue);}
+  th.sortable .arw{display:inline-block;width:0;height:0;margin-left:4px;vertical-align:middle;border-left:4px solid transparent;border-right:4px solid transparent;}
+  th.sortable.asc .arw{border-bottom:5px solid var(--blue);}
+  th.sortable.desc .arw{border-top:5px solid var(--blue);}
+  .tag-veto{background:#fde8e6;color:#c0392b;}
+  .tag-bonus{background:#e3f5ea;color:#2e9e5b;}
+  /* 评价结果应用（第四章） */
+  .rulehd{display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none;}
+  .rulehd .hint{flex:1;}
+  .rulehd .arw{font-size:12px;color:#8492a6;transition:transform .15s;}
+  .rulehd.open .arw{transform:rotate(180deg);}
+  .rlv{border-left:4px solid #cdd5e0;background:#f8fafc;border-radius:0 8px 8px 0;padding:8px 10px;margin-top:8px;}
+  .rlv h4{margin:0 0 4px;font-size:13.5px;}
+  .rlv ul{margin:2px 0 0;padding-left:17px;}
+  .rlv li{font-size:12.5px;line-height:1.65;color:#4a5568;margin-bottom:2px;}
+  .rlv li.s94{color:#1f7a4d;}
+  .rlv li.s94::marker{content:"＋ ";}
+  .rlv.A{border-color:#2e9e5b;} .rlv.A h4{color:#2e9e5b;}
+  .rlv.B{border-color:#2E75B6;} .rlv.B h4{color:#2E75B6;}
+  .rlv.C{border-color:#e0a800;} .rlv.C h4{color:#b8860b;}
+  .rlv.D{border-color:#c0392b;} .rlv.D h4{color:#c0392b;}
+  /* 只读状态条 */
+  .lockbar{display:flex;align-items:center;gap:8px;background:#fff8e6;border-bottom:1px solid #f0d795;padding:8px 14px;font-size:12.5px;color:#8a6d1a;}
+  .lockbar b{font-size:12.5px;}
+  .lockbar .sp{flex:1;}
+  .lockbar button{border:1px solid #d8b25e;background:#fff;color:#8a6d1a;border-radius:7px;padding:4px 10px;font-size:12px;}
+  .lockbar.on{background:#eef7ef;border-bottom-color:#bfe3c9;color:#1f7a4d;}
+  .lockbar.on button{border-color:#8fcfa4;color:#1f7a4d;}
+  /* 信息修改申请提示条 */
+  .reqbar{display:flex;align-items:center;gap:8px;background:#eef4fb;border-bottom:1px solid #d5e3f5;padding:8px 14px;font-size:12.5px;color:#1F4E78;}
+  .reqbar .sp{flex:1;}
+  .reqbar b{font-size:12.5px;}
+  .reqbar button{border:1px solid #a9c6e8;background:#fff;color:#1F4E78;border-radius:7px;padding:4px 10px;font-size:12px;}
+  .tabdot{display:inline-block;min-width:16px;margin-left:4px;background:#c0392b;color:#fff;border-radius:20px;font-size:11px;padding:1px 5px;vertical-align:1px;}
+  .reqitem{border:1px solid #e3e8ef;border-radius:8px;padding:8px 10px;margin-top:8px;background:#fbfcfe;}
+  .reqitem .t{font-size:13px;color:#1f2733;}
+  .reqitem .c{font-size:12.5px;color:#5b6675;margin-top:2px;word-break:break-all;}
+  .reqitem .c s{color:#8492a6;}
+  .reqitem .m{font-size:12px;color:#8492a6;margin-top:2px;}
+  .reqitem .a{display:flex;gap:8px;margin-top:7px;}
+  .reqitem .a button{flex:1;padding:7px;border-radius:7px;border:1px solid #cdd5e0;background:#fff;font-size:13px;color:#33475b;}
+  .reqitem .a button[data-app]{background:var(--blue);color:#fff;border-color:var(--blue);}
+  /* 年度评价节点 */
+  .ddl{display:flex;align-items:center;gap:10px;background:#eef4fb;border:1px solid #d5e3f5;border-radius:10px;padding:9px 12px;margin-bottom:12px;}
+  .ddl .num{font-size:22px;font-weight:700;color:var(--blue);line-height:1;}
+  .ddl .num span{font-size:11px;font-weight:400;color:#5b6675;margin-left:2px;}
+  .ddl .tx{flex:1;font-size:12.5px;line-height:1.5;color:#33475b;}
+  .ddl .tx b{display:block;font-size:13.5px;color:#1f2733;}
+  .ddl.urgent{background:#fdeceb;border-color:#f3c9c5;} .ddl.urgent .num{color:#c0392b;}
+  /* 密钥弹窗 */
+  .mask{position:fixed;inset:0;background:rgba(15,23,35,.45);display:none;align-items:center;justify-content:center;z-index:100;padding:20px;}
+  .mask.on{display:flex;}
+  .modal{background:#fff;border-radius:14px;padding:18px;width:100%;max-width:320px;box-shadow:0 8px 30px rgba(0,0,0,.2);}
+  .amsg{margin:10px 0 0;font-size:14px;line-height:1.6;color:#b03030;text-align:center;word-break:break-all;}
+  .modal h3{margin:0 0 4px;font-size:16px;}
+  .modal .q{font-size:14px;color:#33475b;margin:10px 0 6px;}
+  .modal input{font-size:15px;text-align:center;letter-spacing:2px;}
+  .modal .mb{display:flex;gap:8px;margin-top:12px;}
+  .modal .mb button{flex:1;padding:11px;border-radius:9px;border:1px solid #cdd5e0;background:#fff;font-size:15px;color:#5b6675;}
+  .modal .mb button.ok{background:var(--blue);color:#fff;border-color:var(--blue);font-weight:600;}
+  .modal .err{color:#c0392b;font-size:12.5px;min-height:16px;margin-top:6px;text-align:center;}
+  /* 高频扣分项快捷卡片（折叠） */
+  .hot-zone{border:1px solid #cfe0f2;background:#f6faff;border-radius:10px;margin:12px 0 0;overflow:hidden;}
+  .hot-zone .vhead{display:flex;align-items:center;gap:6px;padding:10px 12px;cursor:pointer;user-select:none;}
+  .hot-zone .vhead b{font-size:13.5px;color:var(--blue);}
+  .hot-zone .vhead .n{margin-left:auto;font-size:11.5px;color:#3f7db5;background:#e2eef8;border-radius:20px;padding:2px 9px;white-space:nowrap;}
+  .hot-zone .vhead .arw{font-size:11px;color:var(--blue);transition:transform .15s;transform:rotate(-90deg);}
+  .hot-zone.open .vhead .arw{transform:rotate(0deg);}
+  .hot-zone .vbody{display:none;border-top:1px dashed #cfdff0;padding:8px 12px 12px;}
+  .hot-zone.open .vbody{display:block;}
+  .hot-zone .vlist{display:flex;flex-direction:column;gap:6px;margin-top:8px;}
+  .hot-zone .vlist button{text-align:left;padding:9px 10px;border:1px solid #cfe0f2;background:#fff;border-radius:8px;font-size:12.5px;color:#33475b;line-height:1.45;}
+  .hot-zone .vlist button b{color:var(--blue);}
+  .hot-zone .vlist button span{color:#5b6675;}
+  .hot-zone .vlist button.on{background:var(--blue);color:#fff;border-color:var(--blue);}
+  .hot-zone .vlist button.on b,.hot-zone .vlist button.on span{color:#fff;}
+  /* 检查计划 */
+  .plangrp{border-left:4px solid #cdd5e0;background:#f8fafc;border-radius:0 8px 8px 0;padding:8px 10px;margin-top:8px;cursor:pointer;}
+  .plangrp .hd{display:flex;align-items:baseline;gap:8px;font-size:13px;}
+  .plangrp .hd b{font-size:14px;}
+  .plangrp .hd .n{margin-left:auto;font-size:12px;color:#5b6675;}
+  .plangrp .note{font-size:12px;color:#5b6675;line-height:1.5;margin-top:3px;}
+  .plangrp .units{display:none;margin-top:6px;padding-top:6px;border-top:1px dashed #d8e0ea;}
+  .plangrp.open .units{display:block;}
+  .plangrp .units div{font-size:12px;color:#4a5568;padding:2px 0;display:flex;gap:6px;}
+  .plangrp .units div span.j{color:#8492a6;white-space:nowrap;}
+  .plangrp.A{border-color:#2e9e5b;} .plangrp.B{border-color:#2E75B6;} .plangrp.C{border-color:#e0a800;} .plangrp.D{border-color:#c0392b;}
+  /* 单位联系信息 */
+  .uinfo{margin:0 0 8px;padding:8px 10px;background:#f7fafd;border:1px solid #e1ebf5;border-radius:8px;font-size:12.5px;line-height:1.7;}
+  .uinfo .r{display:flex;gap:6px;}
+  .uinfo .r .k{color:#8492a6;white-space:nowrap;}
+  .uinfo a{color:var(--blue);text-decoration:none;border-bottom:1px dashed var(--blue2);}
+  .uinfo .edit{border:0;background:none;color:var(--blue);font-size:12px;padding:0 0 0 4px;text-decoration:underline;}
+  .exp{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+  .exp button{padding:11px 8px;border:1px solid #cdd5e0;border-radius:9px;background:#eef2f7;color:var(--blue);font-size:13px;font-weight:600;line-height:1.3;}
+  .exp button:active{background:var(--blue);color:#fff;}
+  .exp button.wide{grid-column:1/-1;}
+  h4.tt{font-size:13px;color:#5b6675;margin:0 0 8px;font-weight:600;}
+  .warn{background:#fff8e6;border:1px solid #f0d795;border-radius:9px;padding:9px 11px;font-size:12px;color:#8a6d1a;line-height:1.6;margin-bottom:10px;}
+</style>
+</head>
+<body>
+<header>
+  <h1 id="site_name">电梯维保单位信用评分</h1>
+  <p id="site_sub">记分制 100 − 扣分 + 加分</p>
+</header>
+<div class="lockbar" id="lockbar">
+  <span id="lk_icon">🔒</span><b id="lk_title">只读模式</b><span id="lk_hint">查看、导出不受限制；记分明细仅显示日期，录入 / 删除 / 修改需密钥</span>
+  <span class="sp"></span>
+  <button id="btn_lock" style="display:none">重新锁定</button>
+  <button id="btn_unlock">验证身份</button>
+</div>
+<div class="reqbar" id="req_bar" style="display:none;">
+  <span>📝</span><b id="req_txt">有单位信息修改申请待确认</b>
+  <span class="sp"></span>
+  <button id="req_go">去处理</button>
+</div>
+<div class="tabs">
+  <button class="active" data-page="p_input">记分录入</button>
+  <button data-page="p_units">单位库</button>
+  <button data-page="p_summary">计分汇总<span class="tabdot" id="req_dot" style="display:none">0</span></button>
+  <button data-page="p_std">评分标准</button>
+  <button data-page="p_q">季度通报</button>
+</div>
+
+<!-- 录入 -->
+<div class="page active" id="p_input">
+  <div class="ddl" id="ddl_box" style="display:none;">
+    <div class="num"><b id="ddl_days">—</b><span>天</span></div>
+    <div class="tx"><b id="ddl_title">—</b><span id="ddl_sub">—</span></div>
+  </div>
+  <div class="card">
+    <label>维保单位名称（可输入关键字筛选）</label>
+    <input id="f_search" placeholder="输入单位名称关键字…" autocomplete="off">
+    <select id="f_unit" size="1" style="margin-top:6px;"><option value="">请选择单位…</option></select>
+    <p class="hint" id="f_unit_info">共 0 家单位</p>
+    <label>日期</label>
+    <input id="f_date" type="date">
+    <label>检查类型</label>
+    <div class="seg" id="f_check">
+      <button data-v="日常监督检查" class="on">日常监督检查</button>
+      <button data-v="年度综合检查">年度综合检查</button>
+    </div>
+    <label>记分类型</label>
+    <div class="seg" id="f_type">
+      <button data-v="扣分" class="on">扣分</button>
+      <button data-v="加分">加分</button>
+    </div>
+    <div class="row2">
+      <div><label>条款编号</label><select id="f_clause"></select></div>
+      <div><label>分值</label><input id="f_value" type="number" inputmode="decimal" placeholder="如 1 / 2 / 4"></div>
+    </div>
+    <div class="hint" id="f_clause_hint">选择条款后显示评分标准</div>
+
+    <div class="hot-zone" id="hot_zone">
+      <div class="vhead" id="hot_toggle">
+        <span class="arw">▾</span><b>⚡ 快捷：高频扣分项</b>
+        <span class="n" id="hot_cnt">Top 8</span>
+      </div>
+      <div class="vbody">
+        <p class="hint" style="margin:0;">按本单位库已有记分记录的条数排序，点选后自动填入条款与常用分值，可再修改。（否决项请直接在上方条款编号里选第 28–34 条）</p>
+        <div class="vlist" id="hot_list"></div>
+      </div>
+    </div>
+
+    <label>事由摘要</label>
+    <textarea id="f_reason" placeholder="如：未开展维保质量抽查"></textarea>
+    <label>录入人</label>
+    <input id="f_recorder" placeholder="检查人员姓名">
+    <button class="btn" id="submitBtn">保存这条记分</button>
+    <p class="hint" id="f_submit_hint">提示：选到条款 28–34（否决项）时，系统自动判该单位 D 级。日期请务必填写，否则无法归入季度统计。</p>
+  </div>
+
+  <h3 style="font-size:14px;color:#5b6675;margin:4px 2px;">最近录入记录</h3>
+  <div class="card" id="ev_list"><p class="hint">暂无记录</p></div>
+</div>
+
+<!-- 单位库 -->
+<div class="page" id="p_units">
+  <div class="card">
+    <h4 class="tt">导入维保单位</h4>
+    <p class="hint" id="u_count">共 0 家单位</p>
+    <div class="exp">
+      <button onclick="dlTpl('xlsx')">⬇ 导入模板(Excel)</button>
+      <button onclick="dlTpl('csv')">⬇ 导入模板(CSV)</button>
+      <button class="wide" id="btn_pick">📥 选择文件导入（Excel / CSV）</button>
+    </div>
+    <input type="file" id="imp_file" accept=".xlsx,.csv,.txt" style="display:none">
+    <div class="seg2" id="imp_mode" style="margin-top:10px;margin-bottom:0;">
+      <button data-v="append" class="on">追加 / 更新</button>
+      <button data-v="replace">清空后重建</button>
+    </div>
+    <p class="hint">
+      ① 先下载模板，按列填写（<b>单位名称</b>必填，其余可留空）；② 保存后点「选择文件导入」；
+      ③ 单位名称相同的行按表内信息更新，不同的新增。<br>
+      首次导入（单位库为空）无需密钥；之后需验证身份。「清空后重建」会连同记分记录一起清空，请谨慎。
+    </p>
+    <div id="imp_result"></div>
+  </div>
+  <div class="card">
+    <input id="u_kw" placeholder="🔍 搜索单位名称 / 辖区 / 联系人" autocomplete="off">
+    <p class="hint" id="u_tbl_count"></p>
+  </div>
+  <div class="card tight">
+    <table id="units_tbl">
+      <thead><tr>
+        <th>单位名称</th><th>辖区</th><th>联系人 / 电话</th><th style="width:52px"></th>
+      </tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- 汇总 -->
+<div class="page" id="p_summary">
+  <div class="stat" id="summary_stat"></div>
+  <div class="card" id="req_card" style="display:none;padding:12px 14px;">
+    <div class="rulehd" id="req_toggle">
+      <b>待确认事项</b>
+      <span class="hint" id="req_hint">待确认</span>
+      <span class="arw" id="req_arw">▾</span>
+    </div>
+    <div id="req_body" style="display:none;margin-top:8px;"></div>
+  </div>
+  <div class="card" id="rule_card" style="padding:12px 14px;">
+    <div class="rulehd" id="rule_toggle">
+      <b>评价结果怎么用？</b>
+      <span class="hint">《管理办法》第四章 · 第十八至二十二条</span>
+      <span class="arw" id="rule_arw">▾</span>
+    </div>
+    <div id="rule_body" style="display:none;margin-top:10px;">
+      <div class="rlv A">
+        <h4>A 级 · 正向激励 <span class="hint">第十八条</span></h4>
+        <ul>
+          <li>减少监督检查频次；鼓励电梯使用单位优先选聘</li>
+          <li>政府采购、招投标等将信用评价结果作为重要参考</li>
+          <li>许可证到期换证，符合条件的<b>可采取自我声明承诺方式</b></li>
+          <li class="s94">适度降低现场检查频次；政府类项目招标、政策扶持中优先推荐</li>
+        </ul>
+      </div>
+      <div class="rlv B">
+        <h4>B 级 · 针对帮扶 <span class="hint">第十九条</span></h4>
+        <ul>
+          <li>实施针对性监督管理与服务，加强指导帮扶</li>
+          <li>每年 1 次年度综合检查；持证周期内 1 次证后监督检查</li>
+          <li>许可证到期换证，<b>可采取自我声明承诺方式</b></li>
+        </ul>
+      </div>
+      <div class="rlv C">
+        <h4>C 级 · 加大力度 <span class="hint">第二十条</span></h4>
+        <ul>
+          <li>限期整改并提交书面整改报告；逾期未改的，暂停受理新增安装、修理业务，暂停信息化平台账号至复查合格</li>
+          <li>每年 1 次年度综合检查 + <b>至少 2 次监督检查</b>；持证周期内 2 次证后监督检查</li>
+          <li>换证<b>不予</b>自我声明承诺；<b>连续两年 C 级</b>的，由设区市局约谈主要负责人</li>
+          <li class="s94">列为重点监管对象，提高抽查比例与检查频次；依法限制参与财政资金支持的电梯更新、改造项目</li>
+        </ul>
+      </div>
+      <div class="rlv D">
+        <h4>D 级 · 重点监管 <span class="hint">第二十一条</span></h4>
+        <ul>
+          <li>限期整改并提交书面整改报告；逾期未改的，暂停受理新增业务、暂停平台账号至复查合格</li>
+          <li>每年 1 次年度检查 + <b>每季度 1 次监督检查</b>；持证周期内 2 次证后监督检查</li>
+          <li>由设区市局<b>约谈主要负责人</b>；换证不予自我声明承诺</li>
+          <li>区内发证的：由发证机关、特设安全监察部门及专家组成专项监察组，<b>实地监察换证评审</b></li>
+          <li>区外发证的：将评价结果及违法违规情况<b>抄送经营主体本部及其许可监管部门</b></li>
+          <li class="s94">列为重点监管对象，提高抽查比例与检查频次；依法限制参与财政资金支持的电梯更新、改造项目</li>
+        </ul>
+      </div>
+      <p class="hint" style="margin:10px 2px 0;">
+        注：<span class="s94">带绿色标记</span>条目出自桂市监办函〔2026〕94 号《加强智慧监管整治电梯安全"内卷式"竞争工作方案》（五）落实分级分类监管。
+        另据第二十二条，存在重大违法违规、性质恶劣、社会危害较大且符合《市场监督管理严重违法失信名单管理办法》规定情形的，按程序列入严重违法失信名单。
+      </p>
+    </div>
+  </div>
+  <div class="card" id="plan_card" style="padding:12px 14px;">
+    <div class="rulehd" id="plan_toggle">
+      <b>下年度监督检查计划建议</b>
+      <span class="hint">《管理办法》第四章 · 第十九至二十一条</span>
+      <span class="arw" id="plan_arw">▾</span>
+    </div>
+    <div id="plan_body" style="display:none;margin-top:10px;">
+      <div class="stat" id="plan_stat"></div>
+      <div id="plan_groups"></div>
+      <p class="hint" style="margin:10px 2px 0;">
+        按等级自动换算：B 级 <b>1 次/年</b>（年度综合检查 1）；C 级 <b>3 次/年</b>（年度综合检查 1 + 监督检查至少 2）；D 级 <b>5 次/年</b>（年度检查 1 + 每季度监督检查 1）。
+        A 级按第十八条<b>减少</b>监督检查频次，不设固定次数，故未计入合计。点等级行可展开单位名单。
+      </p>
+    </div>
+  </div>
+  <div class="card">
+    <input id="s_kw" placeholder="🔍 搜索单位名称 / 辖区" autocomplete="off">
+    <div class="seg3" id="s_lv" style="margin-top:8px;">
+      <button data-v="" class="on">全部</button>
+      <button data-v="A">A级</button>
+      <button data-v="B">B级</button>
+      <button data-v="C">C级</button>
+      <button data-v="D">D级</button>
+      <button data-v="veto">仅否决项</button>
+    </div>
+    <p class="hint" id="s_count"></p>
+  </div>
+  <div class="card tight">
+    <table id="summary_tbl">
+      <thead><tr>
+        <th class="sortable" data-s="name">单位<i class="arw"></i></th>
+        <th class="sortable" data-s="jurisdiction">辖区<i class="arw"></i></th>
+        <th>扣分</th><th>加分</th>
+        <th class="sortable" data-s="final">最终<i class="arw"></i></th>
+        <th>等级</th>
+      </tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+  <div class="card">
+    <h4 class="tt">导出</h4>
+    <div class="exp">
+      <button onclick="dl('/api/export/summary')">⬇ 记分汇总表<br><span style="font-weight:400;font-size:11px">汇总+明细 2 个工作表</span></button>
+      <button onclick="dl('/api/export/summary?format=csv')">⬇ 记分汇总(CSV)</button>
+      <button class="wide" onclick="dl('/api/export/quarterly')">⬇ 季度通报（全年 4 个季度分表）</button>
+      <button class="wide" onclick="dl('/api/export/plan')">⬇ 年度监督检查计划表（含各等级单位名单）</button>
+    </div>
+    <p class="hint">导出为 Excel(.xlsx)，首行冻结、可直接编辑打印。点击行可查看该单位记分明细。</p>
+  </div>
+</div>
+
+<!-- 评分标准 -->
+<div class="page" id="p_std">
+  <div class="seg2" id="std_filter">
+    <button data-v="all" class="on">全部条款</button>
+    <button data-v="used">仅已记分条款</button>
+  </div>
+  <div class="seg3" id="std_sort" style="margin-bottom:8px;">
+    <span style="align-self:center;font-size:12px;color:#8492a6;">排序</span>
+    <button data-s="code" class="on">按编号</button>
+    <button data-s="units_desc">涉及单位 多→少</button>
+    <button data-s="units_asc">涉及单位 少→多</button>
+  </div>
+  <div class="hint" id="std_tip" style="display:none;margin:0 2px 8px;padding:8px 10px;background:#fff7e6;border:1px solid #ffe0a3;border-radius:8px;color:#8a5a00;"></div>
+  <p class="hint" style="margin:0 2px 10px;">「涉及」按被记分的<strong>单位家数</strong>（同一单位多次不重复计）统计，点击行可查看具体单位与事由；表头「编号 / 涉及」也可点击排序。</p>
+  <div class="card tight">
+    <table id="std_tbl">
+      <thead><tr>
+        <th class="sortable" data-s="code">编号<i class="arw"></i></th>
+        <th>分类</th>
+        <th>项目 / 评分标准</th>
+        <th class="sortable" data-s="units">涉及<i class="arw"></i></th>
+      </tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- 季度通报 -->
+<div class="page" id="p_q">
+  <p class="hint" style="margin:0 2px 10px;">按办法第十四条：名称 / 住所 / 联系人 / 违法违规事实 / 记分情况。</p>
+  <div class="seg3" id="q_sel" style="margin-bottom:10px;">
+    <button data-v="1" class="on">第一季度</button>
+    <button data-v="2">第二季度</button>
+    <button data-v="3">第三季度</button>
+    <button data-v="4">第四季度</button>
+    <button data-v="0">未标注日期</button>
+    <button data-v="">全部</button>
+  </div>
+  <div class="warn" id="q_warn" style="display:none;"></div>
+  <div class="stat" id="q_stat"></div>
+  <div class="card tight">
+    <table id="q_tbl">
+      <thead><tr><th>单位</th><th>违法违规事实</th><th>本季扣分</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+  <div class="card">
+    <h4 class="tt">导出</h4>
+    <div class="exp">
+      <button onclick="dlQ('xlsx')">⬇ 导出本季度通报</button>
+      <button onclick="dlQ('csv')">⬇ 本季度(CSV)</button>
+      <button class="wide" onclick="dl('/api/export/quarters')">⬇ 前三季度记分情况（Q1/Q2/Q3 分表）</button>
+      <button onclick="dl('/api/export/quarterly')">⬇ 全年季度通报（4 季分表）</button>
+      <button onclick="dl('/api/export/quarters?q=1')">⬇ 仅第一季度明细</button>
+      <button onclick="dl('/api/export/quarters?q=2')">⬇ 仅第二季度明细</button>
+      <button onclick="dl('/api/export/quarters?q=3')">⬇ 仅第三季度明细</button>
+      <button onclick="dl('/api/export/quarters?q=0')">⬇ 未标注日期明细</button>
+    </div>
+    <p class="hint">「前三季度记分情况」导出为一个 Excel，内含 第一季度 / 第二季度 / 第三季度 / 未标注日期 四张表。</p>
+  </div>
+</div>
+
+<button class="fab" id="fab" title="去录入">＋</button>
+<div class="toast" id="toast"></div>
+
+<div class="mask" id="keymask">
+  <div class="modal">
+    <h3>🔒 需要验证身份</h3>
+    <p class="hint" style="margin:0;">该应用对外为只读，录入记分需回答密钥问题。</p>
+    <p class="q" id="key_question">点这里你想干啥？</p>
+    <input id="key_input" placeholder="请输入答案" autocomplete="off" autocapitalize="off">
+    <div class="mb">
+      <button id="key_cancel">取消</button>
+      <button class="ok" id="key_ok">确定</button>
+    </div>
+    <p class="err" id="key_err"></p>
+  </div>
+</div>
+
+<div class="mask" id="alertmask">
+  <div class="modal">
+    <h3 id="alert_title">提示</h3>
+    <p class="amsg" id="alert_msg"></p>
+    <div class="mb"><button class="ok" id="alert_ok">知道了</button></div>
+  </div>
+</div>
+
+<div class="mask" id="inpmask">
+  <div class="modal">
+    <h3 id="inp_title">填写</h3>
+    <input id="inp_input" placeholder="请输入" autocomplete="off">
+    <div class="mb">
+      <button id="inp_cancel">取消</button>
+      <button class="ok" id="inp_ok">保存</button>
+    </div>
+    <p class="err" id="inp_err"></p>
+  </div>
+</div>
+
+<script>
+// ---------- 接口地址 ----------
+// 默认与本服务同源，直接用相对路径。
+// ★ 使用方若把本页面嵌入到别的系统/云端页面，请把下面改成后端地址，
+//   例如：const API_HOST="https://your-server.example.com";
+const API_HOST="";
+const SAME_ORIGIN_API=!API_HOST;
+function API(p){ return SAME_ORIGIN_API ? p : API_HOST+p; }
+
+let UNITS=[], STDS=[], EVENTS=[], SUMMARY=[], PLAN=null, CONFIG=null;
+let summarySort={key:"final",dir:"asc"};  // 计分汇总默认按最终得分升序（最低分在前）
+function sortSummary(list){
+  const k=summarySort.key, dir=summarySort.dir==="asc"?1:-1;
+  return list.slice().sort((a,b)=>{
+    let r;
+    if(k==="final")r=(+a.final||0)-(+b.final||0);
+    else if(k==="jurisdiction")r=String(a.jurisdiction||"").localeCompare(String(b.jurisdiction||""),"zh");
+    else r=String(a.name||"").localeCompare(String(b.name||""),"zh");
+    return r*dir || (a.id-b.id);
+  });
+}
+function syncSummarySort(){
+  document.querySelectorAll("#summary_tbl th.sortable").forEach(th=>{
+    const on=th.dataset.s===summarySort.key;
+    th.classList.toggle("asc",on&&summarySort.dir==="asc");
+    th.classList.toggle("desc",on&&summarySort.dir==="desc");
+  });
+}
+document.querySelectorAll("#summary_tbl th.sortable").forEach(th=>th.onclick=()=>{
+  const k=th.dataset.s;
+  if(summarySort.key===k)summarySort.dir=summarySort.dir==="asc"?"desc":"asc";
+  else{summarySort.key=k;summarySort.dir=(k==="final")?"asc":"asc";}
+  syncSummarySort(); renderSummary();
+});
+const $=s=>document.querySelector(s);
+const check={v:"日常监督检查"}, type={v:"扣分"};
+const stdFilter={v:"all"};
+const qSel={v:"1"};
+const sLv={v:""}, sKw={v:""};
+
+// 已录入记录里哪些条款用得最多（动态统计，数据变了会自动重排）
+function hotClauses(n){
+  const m={};
+  EVENTS.forEach(e=>{
+    const s=STDS.find(x=>String(x.code)===String(e.clause_code));
+    if(!s||s.type!=="扣分")return;           // 只统计普通扣分项，否决项不进常用榜
+    const k=String(e.clause_code);
+    m[k]=m[k]||{n:0,units:new Set(),vals:{}};
+    m[k].n++; m[k].units.add(e.unit_id);
+    const v=String(parseFloat(e.value)||0);
+    m[k].vals[v]=(m[k].vals[v]||0)+1;
+  });
+  return Object.keys(m).map(code=>{
+    const val=Object.entries(m[code].vals).sort((a,b)=>b[1]-a[1]||parseFloat(a[0])-parseFloat(b[0]))[0];
+    const s=STDS.find(y=>String(y.code)===String(code));
+    return {code,n:m[code].n,nu:m[code].units.size,val:val?val[0]:"",item:s?s.item:"",cat:s?s.category:""};
+  }).sort((a,b)=>b.n-a.n||b.nu-a.nu||codeKey(a.code)[1]-codeKey(b.code)[1]).slice(0,n||8);
+}
+
+// 通用提示弹窗（密钥错误等，层级高于模态框，不会被遮住）
+function uiAlert(msg,title){
+  $("#alert_title").textContent=title||"提示";
+  $("#alert_msg").textContent=msg||"";
+  $("#alertmask").classList.add("on");
+}
+$("#alert_ok").onclick=()=>$("#alertmask").classList.remove("on");
+$("#alertmask").onclick=e=>{if(e.target.id==="alertmask")$("#alertmask").classList.remove("on");};
+// 密钥错误统一提示：弹窗 + 输入框下方红字
+function keyFail(msg){
+  const m=msg||"密钥不正确";
+  const err=$("#key_err"); if(err)err.textContent=m;
+  uiAlert(m,"🚫 验证失败");
+}
+
+// ---------- 密钥弹窗（只读模式）----------
+let keyResolver=null;
+function askKey(){
+  return new Promise(res=>{
+    keyResolver=res;
+    $("#key_err").textContent=""; $("#key_input").value="";
+    if(CONFIG&&CONFIG.editKeyQuestion)$("#key_question").textContent=CONFIG.editKeyQuestion+"？";
+    $("#keymask").classList.add("on");
+    setTimeout(()=>{try{$("#key_input").focus();}catch(e){}},60);
+  });
+}
+function closeKey(v){$("#keymask").classList.remove("on");const r=keyResolver;keyResolver=null;if(r)r(v);}
+$("#key_cancel").onclick=()=>closeKey(null);
+$("#keymask").onclick=e=>{if(e.target.id==="keymask")closeKey(null);};
+$("#key_input").onkeydown=e=>{if(e.key==="Enter")$("#key_ok").click();};
+// 只读 / 已验证身份状态（每次录入仍逐次校验密钥）
+let UNLOCKED=false;
+function updateLockBar(){
+  const bar=$("#lockbar"); if(!bar)return;
+  $("#lk_icon").textContent=UNLOCKED?"🔓":"🔒";
+  $("#lk_title").textContent=UNLOCKED?"已验证身份":"只读模式";
+  $("#lk_hint").textContent=UNLOCKED?"可查看扣分明细；录入 / 删除 / 修改仍需逐次输入密钥":"可录入 / 修改并提交申请（确认后生效）、可查看导出；记分明细仅显示日期";
+  $("#btn_unlock").style.display=UNLOCKED?"none":"";
+  $("#btn_lock").style.display=UNLOCKED?"":"none";
+  bar.classList.toggle("on",UNLOCKED);
+  const sb=$("#submitBtn");
+  if(sb)sb.textContent=UNLOCKED?"保存这条记分":"提交录入申请（待确认）";
+  const sh=$("#f_submit_hint");
+  if(sh)sh.innerHTML=UNLOCKED
+    ? "当前已验证身份，保存后立即计入。"
+    : "提示：只读模式下提交的是<b>录入申请</b>，需密钥确认后才正式计入分数；选到条款 28–34（否决项）时系统自动判该单位 D 级。";
+}
+$("#key_ok").onclick=async()=>{
+  const a=$("#key_input").value;
+  if(!a){$("#key_err").textContent="请输入答案";return;}
+  const j=await (await fetch(API("/api/unlock"),{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({answer:a})})).json();
+  if(j.ok){UNLOCKED=true;updateLockBar();closeKey(a);refreshPriv();} else keyFail(j.msg||"答案不正确");
+};
+$("#btn_unlock").onclick=async()=>{
+  const k=await askKey();
+  if(k){toast("身份已验证 ✓");tab("p_input");}
+};
+$("#btn_lock").onclick=()=>{
+  UNLOCKED=false;updateLockBar();toast("已恢复只读模式");refreshPriv();
+};
+// 权限变化后刷新当前页面（明细按新权限重渲染）
+function refreshPriv(){
+  loadPending();
+  if($("#p_summary").classList.contains("active"))loadSummary();
+  if($("#p_std").classList.contains("active"))loadStandards();
+}
+
+
+
+// ---------- 通用输入弹窗（修改联系人 / 电话 / 地址）----------
+let inpResolver=null, inpOptional=false;
+function askInput(title,def,optional){
+  return new Promise(res=>{
+    inpOptional=!!optional;
+    inpResolver=res;
+    $("#inp_title").textContent=title; $("#inp_input").value=def||""; $("#inp_err").textContent="";
+    $("#inpmask").classList.add("on");
+    setTimeout(()=>{try{$("#inp_input").focus();}catch(e){}},60);
+  });
+}
+function closeInput(v){$("#inpmask").classList.remove("on");const r=inpResolver;inpResolver=null;if(r)r(v);}
+$("#inp_cancel").onclick=()=>closeInput(null);
+$("#inpmask").onclick=e=>{if(e.target.id==="inpmask")closeInput(null);};
+$("#inp_ok").onclick=()=>{const v=$("#inp_input").value.trim();if(!v&&!inpOptional){$("#inp_err").textContent="不能为空";return;}closeInput(v);};
+
+// ---------- 拨号 / 地图导航 ----------
+function mapUrl(addr,name){
+  // 不限定城市，各地通用；需要限定可在 config.js 中扩展后手动改这里
+  return "https://uri.amap.com/search?keyword="+encodeURIComponent(addr)
+    +"&src=elevator-credit&coordinate=gaode&callnative=1";
+}
+function bindTelAddr(rootSel){
+  const root=$(rootSel); if(!root)return;
+  root.addEventListener("click",async e=>{
+    const t=e.target.closest("[data-tel]");
+    if(t){e.preventDefault();const n=t.dataset.tel;if(confirm("拨打 "+n+" ？"))location.href="tel:"+n;return;}
+    const a=e.target.closest("[data-addr]");
+    if(a){e.preventDefault();const addr=a.dataset.addr;
+      if(confirm("在地图导航软件中打开该地址？\n"+addr))window.open(mapUrl(addr,a.dataset.name||""),"_blank");return;}
+    const b=e.target.closest("[data-edit-info]");
+    if(b){e.preventDefault();editUnitField(b.dataset.editInfo,b.dataset.field);return;}
+  });
+}
+
+function toast(m){const t=$("#toast");t.textContent=m;t.style.display="block";setTimeout(()=>t.style.display="none",1800);}
+function codeKey(c){return String(c).indexOf("加分")===0?[1,parseInt(String(c).replace("加分",""),10)||0]:[0,parseInt(c,10)||0];}
+function sortByCode(a){return a.slice().sort((x,y)=>{const p=codeKey(x.code),q=codeKey(y.code);return p[0]-q[0]||p[1]-q[1];});}
+function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
+const cls=e=>e.score_type==="扣分"?"neg":"pos";
+function vtxt(e){return '<span class="'+cls(e)+'">'+(e.is_veto==="是"?"-50":(e.score_type==="扣分"?"-":"+")+e.value)+"</span>";}
+function dl(url){toast("已生成，请查看下载 ↓");const a=document.createElement("a");a.href=SAME_ORIGIN_API?url:fetch(API(url)).then(r=>r.blob()).then(b=>{const u=URL.createObjectURL(b);a.href=u;a.click();setTimeout(()=>URL.revokeObjectURL(u),4000);a.remove();});if(SAME_ORIGIN_API){a.download="";document.body.appendChild(a);a.click();a.remove();}}
+function dlQ(fmt){dl("/api/export/quarterly?q="+encodeURIComponent(qSel.v)+(fmt==="csv"?"&format=csv":""));}
+
+function tab(p){document.querySelectorAll(".tabs button").forEach(b=>b.classList.toggle("active",b.dataset.page===p));
+  document.querySelectorAll(".page").forEach(x=>x.classList.toggle("active",x.id===p));
+  if(p==="p_summary"){loadSummary();loadPlan();loadPending();} if(p==="p_q")loadQuarterly(); if(p==="p_std")loadStandards();
+  if(p==="p_units")renderUnits();}
+
+document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>tab(b.dataset.page));
+$("#fab").onclick=()=>tab("p_input");
+document.querySelectorAll("#f_check button").forEach(b=>b.onclick=()=>{document.querySelectorAll("#f_check button").forEach(x=>x.classList.remove("on"));b.classList.add("on");check.v=b.dataset.v;});
+document.querySelectorAll("#f_type button").forEach(b=>b.onclick=()=>{document.querySelectorAll("#f_type button").forEach(x=>x.classList.remove("on"));b.classList.add("on");type.v=b.dataset.v;fillClauses();});
+document.querySelectorAll("#std_filter button").forEach(b=>b.onclick=()=>{document.querySelectorAll("#std_filter button").forEach(x=>x.classList.remove("on"));b.classList.add("on");stdFilter.v=b.dataset.v;loadStandards();});
+// 评分标准排序：按钮组 + 表头点击
+document.querySelectorAll("#std_sort button").forEach(b=>b.onclick=()=>{stdSort.v=b.dataset.s;loadStandards();});
+document.querySelectorAll("#std_tbl th.sortable").forEach(th=>th.onclick=()=>{
+  if(th.dataset.s==="units") stdSort.v = stdSort.v==="units_desc" ? "units_asc" : "units_desc";
+  else stdSort.v = "code";
+  loadStandards();
+});
+document.querySelectorAll("#q_sel button").forEach(b=>b.onclick=()=>{document.querySelectorAll("#q_sel button").forEach(x=>x.classList.remove("on"));b.classList.add("on");qSel.v=b.dataset.v;loadQuarterly();});
+document.querySelectorAll("#s_lv button").forEach(b=>b.onclick=()=>{document.querySelectorAll("#s_lv button").forEach(x=>x.classList.remove("on"));b.classList.add("on");sLv.v=b.dataset.v;renderSummary();});
+$("#s_kw").oninput=e=>{sKw.v=e.target.value.trim();renderSummary();};
+$("#rule_toggle").onclick=()=>{
+  const b=$("#rule_body"), open=b.style.display==="none";
+  b.style.display=open?"":"none";
+  $("#rule_toggle").classList.toggle("open",open);
+};
+
+function fillUnits(kw){
+  const sel=$("#f_unit"), cur=sel.value;
+  const list=kw?UNITS.filter(u=>u.name.indexOf(kw)>=0||(u.jurisdiction||"").indexOf(kw)>=0):UNITS;
+  sel.innerHTML='<option value="">请选择单位…</option>';
+  list.forEach(u=>{const o=document.createElement("option");o.value=u.id;
+    o.textContent=u.name+(u.jurisdiction?"（"+u.jurisdiction+"）":"");sel.appendChild(o);});
+  if(cur&&list.some(u=>String(u.id)===String(cur)))sel.value=cur;
+  if(!UNITS.length){$("#f_unit_info").innerHTML='单位库为空，请先到「单位库」页 <b>导入维保单位</b>';return;}
+  $("#f_unit_info").textContent=kw?("匹配 "+list.length+" / "+UNITS.length+" 家"):("共 "+UNITS.length+" 家单位");
+}
+$("#f_search").oninput=e=>fillUnits(e.target.value.trim());
+$("#f_unit").onchange=()=>{const u=UNITS.find(x=>String(x.id)===String($("#f_unit").value));
+  $("#f_unit_info").textContent=u?("已选："+u.name+(u.license_no?" · "+u.license_no:"")+(u.note?" · "+u.note:"")):("共 "+UNITS.length+" 家单位");};
+
+// 顶栏标题可能换行：按实际高度对齐标签栏的吸顶位置
+function syncStickyTop(){
+  const h=document.querySelector("header"), t=document.querySelector(".tabs");
+  if(h&&t)t.style.top=(h.offsetHeight||52)+"px";
+}
+window.addEventListener("resize",syncStickyTop);
+async function init(){
+  try{CONFIG=await (await fetch(API("/api/config"))).json();}catch(e){CONFIG=null;}
+  // 站点名称取自 config.js（便于各地改成自己的叫法）
+  if(CONFIG&&CONFIG.siteName){const n=$("#site_name");if(n)n.textContent=CONFIG.siteName;document.title=CONFIG.siteName;}
+  if(CONFIG&&CONFIG.siteSub){const s=$("#site_sub");if(s)s.textContent=CONFIG.siteSub;}
+  UNITS=await (await fetch(API("/api/units"))).json();
+  STDS=sortByCode(await (await fetch(API("/api/standards"))).json());
+  EVENTS=await (await fetch(API("/api/events"))).json();
+  updateLockBar(); syncStickyTop();
+  fillUnits("");
+  $("#f_date").value=new Date().toISOString().slice(0,10);
+  fillClauses(); fillHotList(); loadEvents(); loadStandards();
+  bindTelAddr("#summary_tbl"); bindTelAddr("#q_tbl");
+  await loadPlan(); renderDeadline(); loadPending();
+  renderUnits();
+  // 单位库为空时，直接把「单位库」页推到眼前，引导先导入
+  if(!UNITS.length) tab("p_units");
+}
+function fillClauses(){
+  const sel=$("#f_clause"); sel.innerHTML="";
+  const list=sortByCode(STDS.filter(s=> s.type===type.v || (type.v==="扣分"&&s.type==="否决项")));
+  list.forEach(s=>{const o=document.createElement("option");o.value=s.code;
+    o.textContent=s.code+" "+s.item+(s.type==="否决项"?"（否决项）":"");sel.appendChild(o);});
+  updateClauseHint();
+}
+function updateClauseHint(){
+  const s=STDS.find(x=>x.code===$("#f_clause").value), vb=$("#f_value");
+  if(!s){vb.readOnly=false;vb.style.background="";$("#f_clause_hint").textContent="选择条款后显示评分标准";return;}
+  const veto = s.type==="否决项";
+  $("#f_clause_hint").innerHTML=esc("【"+s.category+"】"+s.item+"："+s.criteria)
+    +(veto?'<br><b style="color:#c0392b">⚠ 否决项：一次记 −50 分并直接定 D 级（桂市监办函〔2026〕94 号）</b>':"");
+  if(veto){vb.value=50;vb.readOnly=true;vb.style.background="#f4f6f9";}
+  else{vb.readOnly=false;vb.style.background="";}
+}
+
+$("#f_clause").onchange=updateClauseHint;
+
+// 高频扣分项（折叠卡片）
+function fillHotList(){
+  const box=$("#hot_list"), zone=$("#hot_zone"), zn=$("#hot_cnt");
+  if(!box)return; box.innerHTML="";
+  const list=hotClauses(8);
+  if(!list.length){if(zone)zone.style.display="none";return;}
+  if(zone)zone.style.display="";
+  if(zn)zn.textContent="Top "+list.length;
+  list.forEach(c=>{
+    const b=document.createElement("button"); b.dataset.code=c.code;
+    b.innerHTML=`<b>第 ${c.code} 条 · ${esc(c.item)}</b><br><span>${esc(c.cat)} · 常用 ${esc(c.val)} 分 · 已录 ${c.n} 条 / ${c.nu} 家</span>`;
+    b.onclick=()=>{
+      if(type.v!=="扣分"){const kb=document.querySelector('#f_type button[data-v="扣分"]');if(kb)kb.click();}
+      $("#f_clause").value=c.code; updateClauseHint();
+      const vb=$("#f_value");
+      if(!vb.readOnly)vb.value=c.val;      // 否决项由 updateClauseHint 锁定为 50
+      box.querySelectorAll("button").forEach(x=>x.classList.remove("on")); b.classList.add("on");
+      if(zone)zone.classList.remove("open");
+      toast("已填入第 "+c.code+" 条 · "+c.val+" 分");
+    };
+    box.appendChild(b);
+  });
+}
+function clearHot(){$("#hot_list").querySelectorAll("button").forEach(x=>x.classList.remove("on"));}
+$("#hot_toggle").onclick=()=>$("#hot_zone").classList.toggle("open");
+
+$("#submitBtn").onclick=async()=>{
+  const unit_id=$("#f_unit").value, date=$("#f_date").value, val=$("#f_value").value, reason=$("#f_reason").value, rec=$("#f_recorder").value;
+  if(!unit_id){toast("请选择维保单位");return;}
+  if(!date){toast("请选择日期（用于季度统计）");return;}
+  if(!val||parseFloat(val)<=0){toast("请填写大于0的分值");return;}
+  const payload={unit_id:+unit_id,date,check_type:check.v,score_type:type.v,clause_code:$("#f_clause").value,value:parseFloat(val),reason,recorder:rec};
+  if(UNLOCKED){   // 已验证身份：直接保存
+    const key=await askKey();
+    if(!key)return;
+    const j=await (await fetch(API("/api/events"),{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify(Object.assign({key},payload))})).json();
+    if(j.ok){toast("已保存 ✓");$("#f_value").value="";$("#f_reason").value="";updateClauseHint();clearHot();
+      EVENTS=await (await fetch(API("/api/events"))).json();fillHotList();loadEvents();loadStandards();SUMMARY=[];}
+    else keyFail(j.msg||"保存失败");
+    return;
+  }
+  // 只读模式：提交录入申请，验证身份确认后才计入分数
+  const j=await (await fetch(API("/api/pending/score"),{method:"POST",headers:{"Content-Type":"application/json"},
+    body:JSON.stringify(payload)})).json();
+  if(!j.ok){toast(j.msg||"提交失败");return;}
+  toast("已提交录入申请，待确认后计入 ✓");
+  $("#f_value").value="";$("#f_reason").value="";updateClauseHint();clearHot();loadPending();
+};
+
+async function loadEvents(){
+  const box=$("#ev_list");
+  if(!EVENTS.length){box.innerHTML='<p class="hint">暂无记录</p>';return;}
+  box.innerHTML="";
+  EVENTS.slice(0,30).forEach(e=>{
+    const d=document.createElement("div");d.className="ev";
+    d.innerHTML=`<div class="t">${esc(e.unit_name)} <span class="pill">${esc(e.clause_code)} ${vtxt(e)}</span> ${e.is_veto==="是"?'<span class="pill tag-veto">D级否决</span>':""}</div>
+      <div class="m">${esc(e.date||"未标注日期")} · ${esc(e.check_type)} · ${esc(e.recorder||"")}${e.reason?"<br>"+esc(e.reason):""}</div>
+      <button class="del" data-id="${e.id}">删除</button>`;
+    box.appendChild(d);
+  });
+  box.querySelectorAll(".del").forEach(b=>b.onclick=async()=>{
+    if(!confirm("确定删除这条记分？"))return;
+    const key=await askKey(); if(!key)return;
+    const j=await (await fetch(API("/api/events/"+b.dataset.id+"?key="+encodeURIComponent(key)),{method:"DELETE"})).json();
+    if(j&&j.ok===false){keyFail(j.msg||"删除失败");return;}
+    toast("已删除");
+    EVENTS=await (await fetch(API("/api/events"))).json();fillHotList();loadEvents();loadStandards();SUMMARY=[];});
+}
+
+function eventsOfClause(code){return EVENTS.filter(e=>String(e.clause_code)===String(code));}
+// 被记分的单位家数（同一单位多条记录只算一家）
+function unitsOfClause(code){return new Set(eventsOfClause(code).map(e=>e.unit_id)).size;}
+
+const stdSort={v:"code"};
+function cmpCode(x,y){const p=codeKey(x.code),q=codeKey(y.code);return p[0]-q[0]||p[1]-q[1];}
+function syncStdSortUI(){
+  document.querySelectorAll("#std_sort button").forEach(b=>b.classList.toggle("on",b.dataset.s===stdSort.v));
+  document.querySelectorAll("#std_tbl th.sortable").forEach(th=>{
+    const k=th.dataset.s;
+    const on=(k==="units"&&(stdSort.v==="units_desc"||stdSort.v==="units_asc"))||(k==="code"&&stdSort.v==="code");
+    th.classList.toggle("asc",on&&(stdSort.v==="units_asc"||stdSort.v==="code"));
+    th.classList.toggle("desc",on&&stdSort.v==="units_desc");
+  });
+}
+
+function loadStandards(){
+  const tb=$("#std_tbl tbody"); tb.innerHTML="";
+  const usedOnly = stdFilter.v==="used";
+  let list=sortByCode(STDS).filter(s=> !usedOnly || eventsOfClause(s.code).length>0);
+  if(stdSort.v==="units_desc")      list.sort((a,b)=>unitsOfClause(b.code)-unitsOfClause(a.code)||cmpCode(a,b));
+  else if(stdSort.v==="units_asc")  list.sort((a,b)=>unitsOfClause(a.code)-unitsOfClause(b.code)||cmpCode(a,b));
+  syncStdSortUI();
+  document.querySelector('#std_filter button[data-v="all"]').textContent="全部条款 "+STDS.length;
+  document.querySelector('#std_filter button[data-v="used"]').textContent="仅已记分条款 "+STDS.filter(s=>eventsOfClause(s.code).length>0).length;
+
+  // 按家数排序时，在顶部标出记分最集中的条款
+  const tip=$("#std_tip");
+  if((stdSort.v==="units_desc"||stdSort.v==="units_asc")&&list.length){
+    const ranked=list.slice().sort((a,b)=>unitsOfClause(b.code)-unitsOfClause(a.code));
+    const top=ranked.slice(0,3).map(s=>`第${s.code}条《${s.item}》${unitsOfClause(s.code)}家`).join("、");
+    tip.innerHTML=`记分最集中的条款：<b>${esc(top)}</b>`; tip.style.display="";
+  }else{tip.style.display="none";}
+
+  if(!list.length){tb.innerHTML='<tr><td colspan="4" class="hint">暂无条款</td></tr>';return;}
+  list.forEach(s=>{
+    const evs=eventsOfClause(s.code);
+    const nUnit=unitsOfClause(s.code);
+    const tagCls = s.type==="否决项"?"tag-veto":(s.type==="加分"?"tag-bonus":"");
+    const tr=document.createElement("tr"); tr.className="std-row"; tr.dataset.code=s.code;
+    tr.innerHTML=`<td class="num">${esc(s.code)}</td>
+      <td><span class="pill ${tagCls}">${esc(s.category)}</span><br><span class="hint">${esc(s.type)}</span></td>
+      <td><b>${esc(s.item)}</b><br><span class="hint">${esc(s.criteria)}</span></td>
+      <td class="cnt"><span class="badge ${nUnit?"hot":""}">${nUnit?nUnit+"家":"—"}</span>${evs.length!==nUnit?`<br><span class="hint">${evs.length}条</span>`:""}</td>`;
+    tb.appendChild(tr);
+    const det=document.createElement("tr"); det.className="det"; det.style.display="none";
+    det.innerHTML=`<td colspan="4"><div>${evs.length
+      ? "<ul>"+evs.map(e=>`<li><b>${esc(e.unit_name)}</b> · ${esc(e.date||"未标注日期")} · ${vtxt(e)}${e.reason?" · "+esc(e.reason):""}</li>`).join("")+"</ul>"
+      : '<span class="hint">暂无单位在此条款上被记分</span>'}</div></td>`;
+    tb.appendChild(det);
+    tr.onclick=()=>{det.style.display = det.style.display==="none"?"table-row":"none";};
+  });
+}
+
+// 单位联系信息（联系人 / 联系电话 / 地址，可点击拨号与导航）
+const INFO_FIELDS={contact:"联系人",phone:"联系电话",office:"办公地址"};
+function editBtn(u,f){const has=String(u[f]||"").trim();
+  return `<button class="edit" data-edit-info="${u.id}" data-field="${f}">${UNLOCKED?(has?"修改":"填写"):(has?"申请修改":"申请登记")}</button>`;}
+function unitInfoHtml(u){
+  const p=String(u.phone||"").trim(), addr=String(u.office||"").trim();
+  const tel=x=>`<a href="tel:${esc(x)}" data-tel="${esc(x)}">${esc(x)}</a>`;
+  return `<div class="uinfo">
+    <div class="r"><span class="k">联系人</span><span>${esc(u.contact||"—")}${editBtn(u,"contact")}</span></div>
+    <div class="r"><span class="k">联系电话</span><span>${p?tel(p):"—"}${editBtn(u,"phone")}</span></div>
+    <div class="r"><span class="k">办公地址</span><span>${addr?`<a href="#" data-addr="${esc(addr)}" data-name="${esc(u.name)}">${esc(addr)}</a>`:"—"}${editBtn(u,"office")}</span></div>
+  </div>`;
+}
+async function editUnitField(id,f){
+  const u=UNITS.find(x=>String(x.id)===String(id)); if(!u)return;
+  const lbl=INFO_FIELDS[f]; if(!lbl)return;
+  if(UNLOCKED){   // 已验证身份：直接改，立即生效
+    const key=await askKey(); if(!key)return;
+    const v=await askInput(lbl+" · "+u.name, u[f]||""); if(!v)return;
+    const j=await (await fetch(API("/api/units/")+id,{method:"PATCH",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({key,[f]:v})})).json();
+    if(!j.ok){keyFail(j.msg);return;}
+    toast("已保存 ✓");
+    UNITS=await (await fetch(API("/api/units"))).json(); SUMMARY=[]; loadSummary(); return;
+  }
+  // 只读状态：提交修改申请，等验证身份的人确认
+  const v=await askInput("申请修改"+lbl+" · "+u.name, u[f]||""); if(!v)return;
+  const who=await askInput("请留下您的姓名 / 单位（便于核实，可留空）","",true);
+  const j=await (await fetch(API("/api/pending/edit"),{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({unit_id:id,field:f,value:v,requester:who||""})})).json();  if(!j.ok){toast(j.msg||"提交失败");return;}
+  toast("已提交修改申请，待确认 ✓"); loadPending();
+}
+
+// ---------- 待确认事项：记分录入申请 + 单位信息修改申请 ----------
+let PENDING={scores:[],edits:[],count:0};
+async function loadPending(){
+  try{PENDING=await (await fetch(API("/api/pending"))).json();}catch(e){PENDING={scores:[],edits:[],count:0};}
+  renderPending();
+}
+function pendingDesc(){
+  const s=(PENDING.scores||[]).length, e=(PENDING.edits||[]).length, d=[];
+  if(s)d.push("记分录入 "+s+" 条");
+  if(e)d.push("信息修改 "+e+" 条");
+  return d.join("、");
+}
+function renderPending(){
+  const n=(PENDING&&PENDING.count)||0;
+  const scores=(PENDING&&PENDING.scores)||[], edits=(PENDING&&PENDING.edits)||[];
+  const bar=$("#req_bar"); if(!bar)return;
+  bar.style.display=n?"flex":"none";
+  $("#req_txt").textContent="有 "+n+" 条待确认事项（"+pendingDesc()+"）";
+  const dot=$("#req_dot"); if(dot){dot.style.display=n?"":"none";dot.textContent=n;}
+  const card=$("#req_card"); card.style.display=n?"":"none";
+  $("#req_hint").textContent=n+" 条待确认 · "+pendingDesc()+(UNLOCKED?" · 可直接通过 / 驳回":" · 验证身份后可处理");
+  let html="";
+  if(scores.length){
+    html+='<div class="reqsec">记分录入申请 <span class="hint">'+scores.length+' 条</span></div>';
+    html+=scores.map(s=>`<div class="reqitem">
+      <div class="t"><b>${esc(s.unit_name)}</b> · 第${esc(s.clause_code)}条${s.is_veto==="是"?' <span class="pill tag-veto">否决项·D级</span>':""}</div>
+      <div class="c"><b class="${s.score_type==="扣分"?"neg":"pos"}">${s.score_type==="扣分"?"-":"+"}${esc(s.value)} 分</b> · ${esc(s.clause_item||"")}</div>
+      <div class="m">${esc(s.date||"未标注日期")} · ${esc(s.check_type)} · 提交人：${esc(s.requester)} · ${esc(s.created_at)}${s.reason?"<br>事由："+esc(s.reason):""}</div>
+      <div class="a"><button data-app="${s.id}" data-kind="score">通过</button><button data-rej="${s.id}" data-kind="score">驳回</button></div>
+    </div>`).join("");
+  }
+  if(edits.length){
+    html+='<div class="reqsec">单位信息修改申请 <span class="hint">'+edits.length+' 条</span></div>';
+    html+=edits.map(it=>`<div class="reqitem">
+      <div class="t"><b>${esc(it.unit_name)}</b> · ${esc(it.field_label)}</div>
+      <div class="c"><s>${esc(it.old_value||"—")}</s> → <b>${esc(it.new_value)}</b></div>
+      <div class="m">申请人：${esc(it.requester)} · ${esc(it.created_at)}</div>
+      <div class="a"><button data-app="${it.id}" data-kind="edit">通过</button><button data-rej="${it.id}" data-kind="edit">驳回</button></div>
+    </div>`).join("");
+  }
+  const body=$("#req_body"); body.innerHTML=html;
+  body.querySelectorAll("[data-app]").forEach(b=>b.onclick=()=>decidePending(b.dataset.app,b.dataset.kind,"approve"));
+  body.querySelectorAll("[data-rej]").forEach(b=>b.onclick=()=>decidePending(b.dataset.rej,b.dataset.kind,"reject"));
+}
+async function decidePending(id,kind,action){
+  const key=await askKey(); if(!key)return;
+  const j=await (await fetch(API("/api/pending/decide"),{method:"POST",headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({kind,id,key,action})})).json();
+  if(!j.ok){keyFail(j.msg||"处理失败");return;}
+  UNLOCKED=true; updateLockBar();
+  toast(action==="approve"?(kind==="score"?"已通过，已计入分数 ✓":"已通过，信息已更新 ✓"):"已驳回");
+  EVENTS=await (await fetch(API("/api/events"))).json();
+  UNITS=await (await fetch(API("/api/units"))).json();
+  SUMMARY=[]; fillHotList(); loadEvents(); loadStandards(); loadSummary(); loadPending();
+}
+$("#req_go").onclick=()=>{tab("p_summary");const c=$("#req_card");
+  const b=$("#req_body"); if(b.style.display==="none"){b.style.display="";$("#req_toggle").classList.add("open");}
+  if(c)c.scrollIntoView({behavior:"smooth",block:"start"});};
+$("#req_toggle").onclick=()=>{
+  const b=$("#req_body"), open=b.style.display==="none";
+  b.style.display=open?"":"none";
+  $("#req_toggle").classList.toggle("open",open);
+};
+
+// ---------- 下年度监督检查计划 ----------
+async function loadPlan(){
+  PLAN=await (await fetch(API("/api/plan"))).json();
+  renderPlan();
+}
+function renderPlan(){
+  if(!PLAN)return;
+  const g=PLAN.groups||[];
+  const get=lv=>g.find(x=>x.level===lv)||{count:0,total:0};
+  $("#plan_stat").innerHTML=
+    `<div class="b"><b>${PLAN.totalTimes}</b><span>全年固定检查(次)</span></div>`+
+    `<div class="b"><b style="color:#c0392b">${get("D").count}</b><span>D级·季度查</span></div>`+
+    `<div class="b"><b style="color:#e0a800">${get("C").count}</b><span>C级·≥3次</span></div>`;
+  $("#plan_groups").innerHTML=g.map(x=>{
+    const s=x.plan||{};
+    return `<div class="plangrp ${x.level}" data-lv="${x.level}">
+      <div class="hd"><b>${x.level} 级</b><span>${x.count} 家</span>
+        <span class="n">${x.perYear==null?"减少频次":x.perYear+" 次/家·年"}　${x.total==null?"":"合计 "+x.total+" 次"}</span></div>
+      <div class="note">${esc(s.note||"")}</div>
+      <div class="units">${x.units.length?x.units.map(u=>`<div><span class="j">${esc(u.jurisdiction||"")}</span>${esc(u.name)}</div>`).join(""):'<div class="hint">本等级暂无单位</div>'}</div>
+    </div>`;
+  }).join("");
+  $("#plan_groups").querySelectorAll(".plangrp").forEach(el=>el.onclick=()=>el.classList.toggle("open"));
+}
+$("#plan_toggle").onclick=()=>{
+  const b=$("#plan_body"), open=b.style.display==="none";
+  b.style.display=open?"":"none";
+  $("#plan_toggle").classList.toggle("open",open);
+  if(open&&!PLAN)loadPlan();
+};
+
+// ---------- 年度评价时间节点 ----------
+function renderDeadline(){
+  const d=(PLAN&&PLAN.deadline)||(CONFIG&&CONFIG.deadline);
+  const box=$("#ddl_box");
+  if(!d){box.style.display="none";return;}
+  box.style.display="flex";
+  $("#ddl_days").textContent=d.days;
+  $("#ddl_title").textContent=d.title;
+  $("#ddl_sub").textContent=`截止 ${d.date} · 《评价管理办法》${d.basis}`;
+  box.classList.toggle("urgent", d.days<=30);
+}
+
+// 展开明细：只读状态只列日期，验证身份后显示条款 / 分值 / 事由
+function detailHtml(u,evs){
+  const head=unitInfoHtml(u);
+  if(!evs.length)return head+'<span class="hint">该单位暂无记分记录</span>';
+  if(!UNLOCKED){
+    return head+'<p class="hint" style="margin:6px 0 4px;">🔒 只读模式：以下仅显示记分日期（共 '+evs.length+' 次），具体条款与事由需「验证身份」后查看。</p>'
+      +"<ul>"+evs.map(e=>`<li>${esc(e.date||"未标注日期")}</li>`).join("")+"</ul>";
+  }
+  return head+"<ul>"+evs.map(e=>`<li>${esc(e.date||"未标注日期")} · 第${esc(e.clause_code)}条 · ${vtxt(e)}${e.reason?" · "+esc(e.reason):""}</li>`).join("")+"</ul>";
+}
+
+async function loadSummary(){
+  SUMMARY=await (await fetch(API("/api/summary"))).json();
+  renderSummary();
+}
+function renderSummary(){
+  if(!SUMMARY.length){loadSummary();return;}
+  const kw=sKw.v;
+  const list=sortSummary(SUMMARY.filter(u=>{
+    if(sLv.v==="veto"&&u.veto!=="是")return false;
+    if(sLv.v&&sLv.v!=="veto"&&u.level!==sLv.v)return false;
+    if(kw&&u.name.indexOf(kw)<0&&String(u.jurisdiction||"").indexOf(kw)<0)return false;
+    return true;
+  }));
+  syncSummarySort();
+  const tb=$("#summary_tbl tbody"); tb.innerHTML="";
+  const cnt={A:0,B:0,C:0,D:0};
+  SUMMARY.forEach(u=>cnt[u.level]++);
+  $("#summary_stat").innerHTML=`<div class="b"><b style="color:#2e9e5b">${cnt.A}</b><span>A级</span></div><div class="b"><b style="color:#2E75B6">${cnt.B}</b><span>B级</span></div><div class="b"><b style="color:#e0a800">${cnt.C}</b><span>C级</span></div><div class="b"><b style="color:#c0392b">${cnt.D}</b><span>D级</span></div>`;
+
+  list.forEach(u=>{
+    const tr=document.createElement("tr"); tr.style.cursor="pointer";
+    tr.innerHTML=`<td>${esc(u.name)}${u.note?'<br><span class="hint">'+esc(u.note)+'</span>':""}</td>
+      <td><span class="pill">${esc(u.jurisdiction||"")}</span></td>
+      <td class="neg">${u.deduct||0}</td><td class="pos">${u.bonus_capped||0}</td><td>${u.level==="D"?'<span class="hint" title="评为D级，不予显示具体得分">—</span>':`<b>${u.final}</b>`}</td>
+      <td><span class="lv lv${u.level}">${u.level}</span>${u.veto==="是"?" ⚠":""}</td>`;
+    tb.appendChild(tr);
+    const det=document.createElement("tr"); det.className="det"; det.style.display="none";
+    const evs=EVENTS.filter(e=>e.unit_id===u.id).sort((a,b)=>String(a.date).localeCompare(String(b.date)));
+    det.innerHTML=`<td colspan="6"><div>${detailHtml(u,evs)}</div></td>`;
+    tb.appendChild(det);
+    tr.onclick=async()=>{
+      if(det.style.display==="table-row"){det.style.display="none";return;}
+      if(det.dataset.loaded!=="1"){
+        const ev=await(await fetch(API("/api/events?unit="+u.id))).json();
+        det.querySelector("div").innerHTML = detailHtml(u,ev);
+        det.dataset.loaded="1";
+      }
+      det.style.display="table-row";
+    };
+  });
+  $("#s_count").textContent=`显示 ${list.length} / ${SUMMARY.length} 家单位`;
+  if(!list.length)tb.innerHTML='<tr><td colspan="6" class="hint">没有匹配的单位</td></tr>';
+}
+
+async function loadQuarterly(){
+  const data=await (await fetch(API("/api/quarterly?q="+encodeURIComponent(qSel.v)))).json();
+  const tb=$("#q_tbl tbody"); tb.innerHTML="";
+  let dsum=0;
+  data.forEach(u=>{dsum+=u.deduct||0;
+    const tr=document.createElement("tr");
+    const _p=String(u.phone||"").trim(), _a=String(u.office||"").trim();
+    tr.innerHTML=`<td>${esc(u.name)}<br>${_a?`<a href="#" data-addr="${esc(_a)}" data-name="${esc(u.name)}" style="font-size:12px;color:#5b6675;text-decoration:none;border-bottom:1px dashed #cdd5e0">${esc(_a)}</a>`:""}<br>联系人：${esc(u.contact||"—")}${_p?` · <a href="tel:${esc(_p)}" data-tel="${esc(_p)}">${esc(_p)}</a>`:""}</td>
+      <td>${esc(u.facts||"—")}${u.veto==="是"?'<br><span class="pill tag-veto">否决项·直接D级</span>':""}</td>
+      <td class="neg">${u.deduct||0}</td>`;
+    tb.appendChild(tr);});
+  if(!data.length)tb.innerHTML='<tr><td colspan="3" class="hint">本季度暂无记分记录</td></tr>';
+  const bonus=data.reduce((a,u)=>a+(u.bonus||0),0);
+  $("#q_stat").innerHTML=`<div class="b"><b>${data.length}</b><span>被记分单位</span></div><div class="b"><b class="neg">${dsum}</b><span>本季扣分合计</span></div><div class="b"><b class="pos">${bonus}</b><span>本季加分合计</span></div>`;
+
+  const w=$("#q_warn");
+  const noDate=EVENTS.filter(e=>!e.date).length;
+  if(qSel.v==="0"&&noDate){w.style.display="block";w.innerHTML=`⚠ 有 <b>${noDate}</b> 条记分未填写日期，无法归入季度统计。建议在「记分录入」补录日期后重新导出。`;}
+  else if(noDate&&qSel.v!==""){w.style.display="block";w.innerHTML=`⚠ 另有 <b>${noDate}</b> 条记分未填写日期，未计入本季度。可切换到「未标注日期」查看。`;}
+  else w.style.display="none";
+}
+
+// ================= 单位库：模板下载 · 导入 · 列表 =================
+const impMode={v:"append"};
+document.querySelectorAll("#imp_mode button").forEach(b=>b.onclick=()=>{
+  document.querySelectorAll("#imp_mode button").forEach(x=>x.classList.remove("on"));
+  b.classList.add("on"); impMode.v=b.dataset.v;
+});
+$("#btn_pick").onclick=()=>$("#imp_file").click();
+$("#u_kw").oninput=()=>renderUnits();
+$("#imp_file").onchange=async e=>{const f=e.target.files&&e.target.files[0];e.target.value="";if(f)await doImport(f);};
+document.querySelector("#units_tbl tbody").addEventListener("click",e=>{
+  const b=e.target.closest("button.del"); if(b)delUnit(+b.dataset.id);
+});
+
+function dlTpl(fmt){dl("/api/template/units"+(fmt==="xlsx"?"?format=xlsx":""));}
+
+function renderUnits(){
+  const tb=document.querySelector("#units_tbl tbody"); if(!tb)return;
+  const kw=String(($("#u_kw")||{}).value||"").trim();
+  const list=UNITS.filter(u=>!kw||u.name.indexOf(kw)>=0||String(u.jurisdiction||"").indexOf(kw)>=0||String(u.contact||"").indexOf(kw)>=0);
+  tb.innerHTML="";
+  list.slice().sort((a,b)=>a.name.localeCompare(b.name,"zh")).forEach(u=>{
+    const tr=document.createElement("tr");
+    const p=String(u.phone||"").trim();
+    tr.innerHTML='<td>'+esc(u.name)
+      +(u.license_no?'<br><span class="hint">'+esc(u.license_no)+(u.level?" · "+esc(u.level):"")+'</span>':"")
+      +(u.office?'<br><span class="hint">'+esc(u.office)+'</span>':"")+'</td>'
+      +'<td><span class="pill">'+esc(u.jurisdiction||"—")+'</span></td>'
+      +'<td>'+esc(u.contact||"—")+(p?'<br><a href="tel:'+esc(p)+'" data-tel="'+esc(p)+'">'+esc(p)+'</a>':"")+'</td>'
+      +'<td><button class="del" data-id="'+u.id+'" style="padding:4px 8px;border:1px solid #e3b7b7;border-radius:7px;background:#fff;color:#c0392b;font-size:12px;">删除</button></td>';
+    tb.appendChild(tr);
+  });
+  const c=$("#u_count"); if(c)c.textContent="共 "+UNITS.length+" 家单位";
+  const t=$("#u_tbl_count"); if(t)t.textContent=kw?("匹配 "+list.length+" / "+UNITS.length+" 家"):("共 "+UNITS.length+" 家");
+  if(!list.length)tb.innerHTML='<tr><td colspan="4" class="hint">'+(UNITS.length?"没有匹配的单位":"还没有单位，请先下载导入模板并填写")+'</td></tr>';
+}
+
+/** 文本文件按 UTF-8 读取，失败时回退 GBK（Excel 另存的 CSV 常见） */
+function decodeText(buf){
+  try{ return new TextDecoder("utf-8",{fatal:true}).decode(buf); }
+  catch(e){
+    try{ return new TextDecoder("gbk").decode(buf); }catch(e2){ return new TextDecoder("utf-8").decode(buf); }
+  }
+}
+function readAsDataURL(f){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(String(r.result));r.onerror=rej;r.readAsDataURL(f);});}
+
+async function doImport(f){
+  const box=$("#imp_result"); if(!box)return;
+  box.innerHTML='<p class="hint">正在导入：'+esc(f.name)+' …</p>';
+  try{
+    const ext=(String(f.name).split(".").pop()||"").toLowerCase();
+    const payload={mode:impMode.v};
+    if(ext==="xlsx"){ payload.b64=(await readAsDataURL(f)).split(",").pop(); }
+    else { payload.text=decodeText(await f.arrayBuffer()); }
+    // 单位库非空 → 需要验证身份
+    if(UNITS.length){
+      const k=await askKey();
+      if(!k){box.innerHTML='<p class="hint">已取消导入</p>';return;}
+      payload.key=k;
+    }
+    const j=await (await fetch(API("/api/import/units"),{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)})).json();
+    if(!j.ok){
+      box.innerHTML='<p class="hint" style="color:#c0392b">导入失败：'+esc(j.msg||"未知错误")+'</p>';
+      uiAlert(j.msg||"导入失败","⚠ 导入失败"); return;
+    }
+    let h='<p class="hint" style="color:#2e9e5b">✅ 导入完成：新增 <b>'+j.added+'</b> 家，更新 <b>'+j.updated+'</b> 家，跳过 '+j.skipped+' 行；当前共 <b>'+j.total+'</b> 家单位。</p>';
+    if(j.errors&&j.errors.length){
+      h+='<p class="hint" style="color:#c0392b">'+j.errors.slice(0,5).map(e=>"第 "+e.row+" 行："+esc(e.msg)).join("<br>")+'</p>';
+    }
+    box.innerHTML=h;
+    UNITS=await (await fetch(API("/api/units"))).json();
+    EVENTS=await (await fetch(API("/api/events"))).json();
+    SUMMARY=[]; renderUnits(); fillUnits(String(($("#f_search")||{}).value||"").trim()); fillHotList();
+    toast("已导入 "+j.total+" 家单位");
+    if(!j.added&&!j.updated) uiAlert("没有导入任何单位。请确认文件第一行含【单位名称】列，且名称列不为空。","⚠ 未导入数据");
+  }catch(e){
+    box.innerHTML='<p class="hint" style="color:#c0392b">导入出错：'+esc(String(e&&e.message||e))+'</p>';
+  }
+}
+
+async function delUnit(id){
+  const u=UNITS.find(x=>x.id===id); if(!u)return;
+  if(!confirm("确定删除「"+u.name+"」？\n已有记分记录的单位不能删除。"))return;
+  const key=await askKey(); if(!key)return;
+  const j=await (await fetch(API("/api/units/"+id),{method:"DELETE",headers:{"Content-Type":"application/json"},body:JSON.stringify({key})})).json();
+  if(!j.ok){uiAlert(j.msg||"删除失败","⚠ 无法删除");return;}
+  UNITS=await (await fetch(API("/api/units"))).json();
+  SUMMARY=[]; renderUnits(); fillUnits(""); toast("已删除，当前 "+j.total+" 家单位");
+}
+
+init();
+</script>
+</body>
+</html>

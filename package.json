@@ -1,0 +1,14 @@
+{
+  "name": "elevator-credit-guangxi",
+  "version": "1.0.0",
+  "private": true,
+  "description": "电梯维保单位信用评分工具（广西通用）· 零依赖 Node.js 应用，支持维保单位信息导入",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {}
+}
