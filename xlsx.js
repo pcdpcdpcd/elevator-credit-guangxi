@@ -194,7 +194,9 @@ ${overrides}
 // CSV（带 BOM，Excel 直接打开不乱码）
 function buildCsv(rows) {
   const q = v => {
-    const s = String(v == null ? '' : v);
+    // 单元格可能是 {v, s} 样式对象，CSV 只取值
+    const raw = (v && typeof v === 'object' && 'v' in v) ? v.v : v;
+    const s = String(raw == null ? '' : raw);
     return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
   };
   return Buffer.from('\uFEFF' + rows.map(r => r.map(q).join(',')).join('\r\n'), 'utf8');

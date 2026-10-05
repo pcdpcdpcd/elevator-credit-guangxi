@@ -203,8 +203,9 @@ function nextDeadline(now) {
   };
 }
 
-/** 季度通报：本季度有记分的单位（含否决项） */
-function quarterlyOf(db, q) {
+/** 季度通报：本季度有记分的单位（含否决项）
+ *  redact=true 时不返回「违法违规事实」（只读模式对外脱敏） */
+function quarterlyOf(db, q, redact) {
   const sum = computeSummary(db);
   const idx = new Map(sum.map(u => [u.id, u]));
   const hit = new Map();
@@ -227,7 +228,7 @@ function quarterlyOf(db, q) {
     return {
       id, name: u.name, office: u.office, contact: u.contact, phone: u.phone,
       jurisdiction: u.jurisdiction, license_no: u.license_no,
-      facts: r.facts.join('；'),
+      facts: redact ? '' : r.facts.join('；'),
       deduct: Math.round(r.deduct * 100) / 100,
       bonus: Math.round(r.bonus * 100) / 100,
       final: u.final, level: u.level, veto: r.veto ? '是' : '否'
@@ -278,8 +279,8 @@ function summarySheets(db) {
   return [main, det];
 }
 
-function quarterSheet(db, q, titleName) {
-  const rows = quarterlyOf(db, q);
+function quarterSheet(db, q, titleName, redact) {
+  const rows = quarterlyOf(db, q, redact);
   const cols = [6, 36, 30, 10, 10, 10, 10, 8, 60, 10];
   const sheet = {
     name: titleName,
@@ -289,7 +290,7 @@ function quarterSheet(db, q, titleName) {
   rows.forEach((u, i) => {
     sheet.rows.push([
       i + 1, u.name, u.office || '', u.jurisdiction || '', u.contact || '', u.phone || '',
-      u.deduct, u.bonus, u.facts || '—', { v: u.level, s: u.veto === '是' ? 3 : 0 }
+      u.deduct, u.bonus, redact ? '—' : (u.facts || '—'), { v: u.level, s: u.veto === '是' ? 3 : 0 }
     ]);
   });
   // 合计行
@@ -301,7 +302,7 @@ function quarterSheet(db, q, titleName) {
   return sheet;
 }
 
-function quarterDetailSheet(db, q) {
+function quarterDetailSheet(db, q, redact) {
   const stdIdx = new Map(db.standards.map(s => [String(s.code), s]));
   const name = q ? QUARTER_LABEL[q] : '未标注日期';
   const sheet = {
@@ -320,7 +321,7 @@ function quarterDetailSheet(db, q) {
       e.date || '未标注日期', e.clause_code, e.clause_category || s.category || '', s.item || '',
       e.check_type || '',
       { v: evSign(e), s: e.score_type === '扣分' ? 3 : 0 },
-      (e.is_veto === '是' ? '【否决项·直接定D级】' : '') + (e.reason || ''), e.recorder || ''
+      redact ? '—' : ((e.is_veto === '是' ? '【否决项·直接定D级】' : '') + (e.reason || '')), e.recorder || ''
     ]);
   });
   const td = evs.filter(e => e.score_type !== '加分').reduce((a, e) => a + evVal(e), 0);
@@ -610,6 +611,32 @@ const server = http.createServer(async (req, res) => {
       writeDB(db);
       return send(res, 200, { ok: true });
     }
+    // 修改已有记分记录（需密钥）：单位不可改，其余字段可改
+    if ((req.method === 'PUT' || req.method === 'PATCH') && /^\/api\/events\/\d+$/.test(url)) {
+      const id = parseInt(url.split('/').pop(), 10);
+      const p = JSON.parse(await body(req) || '{}');
+      if (!checkKey(p.key)) return send(res, 200, { ok: false, msg: KEY_MSG });
+      const db = readDB();
+      const ev = db.events.find(e => e.id === id);
+      if (!ev) return send(res, 200, { ok: false, msg: '记分记录不存在' });
+      const std = db.standards.find(s => s.code === String(p.clause_code));
+      if (!std) return send(res, 200, { ok: false, msg: '条款不存在' });
+      const val = parseFloat(p.value);
+      if (!(val > 0)) return send(res, 200, { ok: false, msg: '分值需大于0' });
+      const veto = std.type === '否决项';
+      ev.date = String(p.date || '').trim();
+      ev.check_type = p.check_type || '日常监督检查';
+      ev.score_type = veto ? '扣分' : (p.score_type || '扣分');
+      ev.clause_code = std.code;
+      ev.clause_category = std.category;
+      ev.is_veto = veto ? '是' : '否';
+      ev.value = veto ? VETO_DEDUCT : val;
+      ev.reason = String(p.reason || '').trim();
+      ev.recorder = String(p.recorder || '').trim();
+      ev.edited_at = new Date().toISOString().slice(0, 19).replace('T', ' ');
+      writeDB(db);
+      return send(res, 200, { ok: true, event: ev });
+    }
     if (req.method === 'GET' && url === '/api/summary') {
       return send(res, 200, computeSummary(readDB()));
     }
@@ -617,7 +644,8 @@ const server = http.createServer(async (req, res) => {
       // q 为空=全部；q=0=未标注日期；q=1..4=对应季度
       const raw = qs.get('q');
       const q = (raw === null || raw === '') ? null : (parseInt(raw, 10) || 0);
-      return send(res, 200, quarterlyOf(readDB(), q));
+      // redact=1：只读模式，不返回违法违规事实
+      return send(res, 200, quarterlyOf(readDB(), q, qs.get('redact') === '1'));
     }
 
     // 下年度监督检查计划（第四章频次换算）
@@ -783,10 +811,11 @@ const server = http.createServer(async (req, res) => {
       const hasQ = !(raw === null || raw === '');
       const q = hasQ ? (parseInt(raw, 10) || 0) : 0;
       const stamp = new Date().toISOString().slice(0, 10);
+      const rd = qs.get('redact') === '1';   // 只读模式导出：隐去违法违规事实
       const sheets = hasQ
-        ? [quarterSheet(db, q, QUARTER_LABEL[q] + '通报')]
-        : [1, 2, 3, 4].map(n => quarterSheet(db, n, QUARTER_LABEL[n] + '通报'))
-          .concat([quarterSheet(db, 0, '未标注日期')]);
+        ? [quarterSheet(db, q, QUARTER_LABEL[q] + '通报', rd)]
+        : [1, 2, 3, 4].map(n => quarterSheet(db, n, QUARTER_LABEL[n] + '通报', rd))
+          .concat([quarterSheet(db, 0, '未标注日期', rd)]);
       if (qs.get('format') === 'csv') {
         return sendCsv(res, `季度通报_${hasQ ? QUARTER_LABEL[q] : '全年度'}_${stamp}.csv`, sheets[0].rows);
       }
@@ -798,9 +827,10 @@ const server = http.createServer(async (req, res) => {
       const raw = qs.get('q');
       const hasQ = !(raw === null || raw === '');
       const q = hasQ ? (parseInt(raw, 10) || 0) : 0;
+      const rd = qs.get('redact') === '1';   // 只读模式导出：隐去事由摘要
       const sheets = hasQ
-        ? [quarterDetailSheet(db, q)]
-        : [1, 2, 3].map(n => quarterDetailSheet(db, n)).concat([quarterDetailSheet(db, 0)]);
+        ? [quarterDetailSheet(db, q, rd)]
+        : [1, 2, 3].map(n => quarterDetailSheet(db, n, rd)).concat([quarterDetailSheet(db, 0, rd)]);
       if (qs.get('format') === 'csv') {
         return sendCsv(res, `${hasQ ? QUARTER_LABEL[q] : '前三季度'}记分情况_${stamp}.csv`, sheets[0].rows);
       }

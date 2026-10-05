@@ -42,6 +42,9 @@
   .pill{display:inline-block;padding:1px 7px;border-radius:20px;font-size:11px;background:#eef2f7;color:#5b6675;}
   .neg{color:#c0392b;font-weight:600;} .pos{color:#2e9e5b;font-weight:600;}
   .del{color:#c0392b;border:0;background:none;font-size:13px;padding:4px;}
+  .ev .ops{display:flex;gap:16px;margin-top:6px;}
+  .ev .ops button{border:0;background:none;font-size:13px;padding:4px 0;color:var(--blue);}
+  .ev .ops button.del{color:#c0392b;}
   .ev{padding:10px 0;border-bottom:1px solid var(--line);}
   .ev .t{font-size:14px;font-weight:600;}
   .ev .m{font-size:12px;color:#8b95a5;margin-top:3px;line-height:1.5;}
@@ -115,6 +118,8 @@
   /* 密钥弹窗 */
   .mask{position:fixed;inset:0;background:rgba(15,23,35,.45);display:none;align-items:center;justify-content:center;z-index:100;padding:20px;}
   .mask.on{display:flex;}
+  /* 层级：编辑弹窗 < 密钥 / 输入弹窗 < 提示弹窗，保证后弹的始终在最上层 */
+  #evmask{z-index:101;} #keymask,#inpmask{z-index:110;} #alertmask{z-index:120;}
   .modal{background:#fff;border-radius:14px;padding:18px;width:100%;max-width:320px;box-shadow:0 8px 30px rgba(0,0,0,.2);}
   .amsg{margin:10px 0 0;font-size:14px;line-height:1.6;color:#b03030;text-align:center;word-break:break-all;}
   .modal h3{margin:0 0 4px;font-size:16px;}
@@ -124,6 +129,10 @@
   .modal .mb button{flex:1;padding:11px;border-radius:9px;border:1px solid #cdd5e0;background:#fff;font-size:15px;color:#5b6675;}
   .modal .mb button.ok{background:var(--blue);color:#fff;border-color:var(--blue);font-weight:600;}
   .modal .err{color:#c0392b;font-size:12.5px;min-height:16px;margin-top:6px;text-align:center;}
+  /* 记分编辑弹窗 */
+  #evmask .modal{max-width:360px;max-height:86vh;overflow:auto;}
+  #evmask input,#evmask select,#evmask textarea{text-align:left;letter-spacing:normal;}
+  #evmask .seg2 button{padding:9px 6px;font-size:13px;}
   /* 高频扣分项快捷卡片（折叠） */
   .hot-zone{border:1px solid #cfe0f2;background:#f6faff;border-radius:10px;margin:12px 0 0;overflow:hidden;}
   .hot-zone .vhead{display:flex;align-items:center;gap:6px;padding:10px 12px;cursor:pointer;user-select:none;}
@@ -381,7 +390,7 @@
     <div class="exp">
       <button onclick="dl('/api/export/summary')">⬇ 记分汇总表<br><span style="font-weight:400;font-size:11px">汇总+明细 2 个工作表</span></button>
       <button onclick="dl('/api/export/summary?format=csv')">⬇ 记分汇总(CSV)</button>
-      <button class="wide" onclick="dl('/api/export/quarterly')">⬇ 季度通报（全年 4 个季度分表）</button>
+      <button class="wide" onclick="dlR('/api/export/quarterly')">⬇ 季度通报（全年 4 个季度分表）</button>
       <button class="wide" onclick="dl('/api/export/plan')">⬇ 年度监督检查计划表（含各等级单位名单）</button>
     </div>
     <p class="hint">导出为 Excel(.xlsx)，首行冻结、可直接编辑打印。点击行可查看该单位记分明细。</p>
@@ -418,6 +427,7 @@
 <!-- 季度通报 -->
 <div class="page" id="p_q">
   <p class="hint" style="margin:0 2px 10px;">按办法第十四条：名称 / 住所 / 联系人 / 违法违规事实 / 记分情况。</p>
+  <p class="hint" id="q_priv" style="margin:0 2px 10px;display:none;">🔒 只读模式：「违法违规事实」不予显示，导出时同样隐去；验证身份后可查看。</p>
   <div class="seg3" id="q_sel" style="margin-bottom:10px;">
     <button data-v="1" class="on">第一季度</button>
     <button data-v="2">第二季度</button>
@@ -439,12 +449,12 @@
     <div class="exp">
       <button onclick="dlQ('xlsx')">⬇ 导出本季度通报</button>
       <button onclick="dlQ('csv')">⬇ 本季度(CSV)</button>
-      <button class="wide" onclick="dl('/api/export/quarters')">⬇ 前三季度记分情况（Q1/Q2/Q3 分表）</button>
-      <button onclick="dl('/api/export/quarterly')">⬇ 全年季度通报（4 季分表）</button>
-      <button onclick="dl('/api/export/quarters?q=1')">⬇ 仅第一季度明细</button>
-      <button onclick="dl('/api/export/quarters?q=2')">⬇ 仅第二季度明细</button>
-      <button onclick="dl('/api/export/quarters?q=3')">⬇ 仅第三季度明细</button>
-      <button onclick="dl('/api/export/quarters?q=0')">⬇ 未标注日期明细</button>
+      <button class="wide" onclick="dlR('/api/export/quarters')">⬇ 前三季度记分情况（Q1/Q2/Q3 分表）</button>
+      <button onclick="dlR('/api/export/quarterly')">⬇ 全年季度通报（4 季分表）</button>
+      <button onclick="dlR('/api/export/quarters?q=1')">⬇ 仅第一季度明细</button>
+      <button onclick="dlR('/api/export/quarters?q=2')">⬇ 仅第二季度明细</button>
+      <button onclick="dlR('/api/export/quarters?q=3')">⬇ 仅第三季度明细</button>
+      <button onclick="dlR('/api/export/quarters?q=0')">⬇ 未标注日期明细</button>
     </div>
     <p class="hint">「前三季度记分情况」导出为一个 Excel，内含 第一季度 / 第二季度 / 第三季度 / 未标注日期 四张表。</p>
   </div>
@@ -484,6 +494,40 @@
       <button class="ok" id="inp_ok">保存</button>
     </div>
     <p class="err" id="inp_err"></p>
+  </div>
+</div>
+
+<!-- 修改已有记分记录（需验证身份） -->
+<div class="mask" id="evmask">
+  <div class="modal">
+    <h3>✏️ 修改这条记分</h3>
+    <p class="hint" style="margin:6px 0 0;" id="ev_unit"></p>
+    <label>日期</label>
+    <input id="ev_date" type="date">
+    <label>检查类型</label>
+    <div class="seg2" id="ev_check">
+      <button data-v="日常监督检查">日常监督检查</button>
+      <button data-v="年度综合检查">年度综合检查</button>
+    </div>
+    <label>记分类型</label>
+    <div class="seg2" id="ev_type">
+      <button data-v="扣分">扣分</button>
+      <button data-v="加分">加分</button>
+    </div>
+    <div class="row2">
+      <div><label>条款编号</label><select id="ev_clause"></select></div>
+      <div><label>分值</label><input id="ev_value" type="number" inputmode="decimal" placeholder="如 1 / 2 / 4"></div>
+    </div>
+    <div class="hint" id="ev_clause_hint"></div>
+    <label>事由摘要</label>
+    <textarea id="ev_reason" placeholder="如：未开展维保质量抽查"></textarea>
+    <label>录入人</label>
+    <input id="ev_recorder" placeholder="检查人员姓名">
+    <div class="mb">
+      <button id="ev_cancel">取消</button>
+      <button class="ok" id="ev_ok">保存修改</button>
+    </div>
+    <p class="err" id="ev_err"></p>
   </div>
 </div>
 
@@ -576,13 +620,25 @@ function closeKey(v){$("#keymask").classList.remove("on");const r=keyResolver;ke
 $("#key_cancel").onclick=()=>closeKey(null);
 $("#keymask").onclick=e=>{if(e.target.id==="keymask")closeKey(null);};
 $("#key_input").onkeydown=e=>{if(e.key==="Enter")$("#key_ok").click();};
+// 编辑 / 删除等敏感操作：未验证身份的先验证，已验证的逐次输入密钥
+// 返回密钥（供接口二次校验），取消或验证失败返回 null
+async function ensureKey(){
+  if(UNLOCKED) return await askKey();
+  const a=await askKey(); if(!a)return null;
+  const j=await (await fetch(API("/api/unlock"),{method:"POST",headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({answer:a})})).json();
+  if(!j.ok){keyFail(j.msg||"答案不正确");return null;}
+  UNLOCKED=true; updateLockBar(); refreshPriv();
+  return a;
+}
 // 只读 / 已验证身份状态（每次录入仍逐次校验密钥）
 let UNLOCKED=false;
 function updateLockBar(){
   const bar=$("#lockbar"); if(!bar)return;
   $("#lk_icon").textContent=UNLOCKED?"🔓":"🔒";
   $("#lk_title").textContent=UNLOCKED?"已验证身份":"只读模式";
-  $("#lk_hint").textContent=UNLOCKED?"可查看扣分明细；录入 / 删除 / 修改仍需逐次输入密钥":"可录入 / 修改并提交申请（确认后生效）、可查看导出；记分明细仅显示日期";
+  $("#lk_hint").textContent=UNLOCKED?"可查看扣分明细与违法违规事实；录入 / 修改 / 编辑 / 删除仍需逐次输入密钥":"可录入记分、申请修改单位信息（确认后生效）；最近记录的编辑 / 删除与违法违规事实需「验证身份」后才能操作";
+  const qp=$("#q_priv"); if(qp)qp.style.display=UNLOCKED?"none":"";
   $("#btn_unlock").style.display=UNLOCKED?"none":"";
   $("#btn_lock").style.display=UNLOCKED?"":"none";
   bar.classList.toggle("on",UNLOCKED);
@@ -611,6 +667,8 @@ function refreshPriv(){
   loadPending();
   if($("#p_summary").classList.contains("active"))loadSummary();
   if($("#p_std").classList.contains("active"))loadStandards();
+  if($("#p_q").classList.contains("active"))loadQuarterly();
+  if($("#p_input").classList.contains("active"))loadEvents();
 }
 
 
@@ -657,7 +715,10 @@ function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","
 const cls=e=>e.score_type==="扣分"?"neg":"pos";
 function vtxt(e){return '<span class="'+cls(e)+'">'+(e.is_veto==="是"?"-50":(e.score_type==="扣分"?"-":"+")+e.value)+"</span>";}
 function dl(url){toast("已生成，请查看下载 ↓");const a=document.createElement("a");a.href=SAME_ORIGIN_API?url:fetch(API(url)).then(r=>r.blob()).then(b=>{const u=URL.createObjectURL(b);a.href=u;a.click();setTimeout(()=>URL.revokeObjectURL(u),4000);a.remove();});if(SAME_ORIGIN_API){a.download="";document.body.appendChild(a);a.click();a.remove();}}
-function dlQ(fmt){dl("/api/export/quarterly?q="+encodeURIComponent(qSel.v)+(fmt==="csv"?"&format=csv":""));}
+// 只读模式导出同样隐去「违法违规事实 / 事由摘要」，验证身份后导出完整内容
+function privUrl(u){ return UNLOCKED?u:(u+(u.indexOf("?")<0?"?":"&")+"redact=1"); }
+function dlR(u){ dl(privUrl(u)); }
+function dlQ(fmt){dl(privUrl("/api/export/quarterly?q="+encodeURIComponent(qSel.v)+(fmt==="csv"?"&format=csv":"")));}
 
 function tab(p){document.querySelectorAll(".tabs button").forEach(b=>b.classList.toggle("active",b.dataset.page===p));
   document.querySelectorAll(".page").forEach(x=>x.classList.toggle("active",x.id===p));
@@ -794,23 +855,88 @@ $("#submitBtn").onclick=async()=>{
 
 async function loadEvents(){
   const box=$("#ev_list");
+  if(!box)return;
   if(!EVENTS.length){box.innerHTML='<p class="hint">暂无记录</p>';return;}
-  box.innerHTML="";
+  box.innerHTML= UNLOCKED?"":'<p class="hint" style="margin:0 0 4px;">🔒 只读模式：编辑 / 删除需先「验证身份」。</p>';
   EVENTS.slice(0,30).forEach(e=>{
     const d=document.createElement("div");d.className="ev";
     d.innerHTML=`<div class="t">${esc(e.unit_name)} <span class="pill">${esc(e.clause_code)} ${vtxt(e)}</span> ${e.is_veto==="是"?'<span class="pill tag-veto">D级否决</span>':""}</div>
       <div class="m">${esc(e.date||"未标注日期")} · ${esc(e.check_type)} · ${esc(e.recorder||"")}${e.reason?"<br>"+esc(e.reason):""}</div>
-      <button class="del" data-id="${e.id}">删除</button>`;
+      <div class="ops">
+        <button class="op" data-edit="${e.id}">✏️ 编辑</button>
+        <button class="del" data-del="${e.id}">🗑 删除</button>
+      </div>`;
     box.appendChild(d);
   });
-  box.querySelectorAll(".del").forEach(b=>b.onclick=async()=>{
-    if(!confirm("确定删除这条记分？"))return;
-    const key=await askKey(); if(!key)return;
-    const j=await (await fetch(API("/api/events/"+b.dataset.id+"?key="+encodeURIComponent(key)),{method:"DELETE"})).json();
+  box.querySelectorAll("[data-edit]").forEach(b=>b.onclick=()=>openEvEdit(b.dataset.edit));
+  box.querySelectorAll("[data-del]").forEach(b=>b.onclick=async()=>{
+    if(!confirm("确定删除这条记分？删除后不可恢复。"))return;
+    const key=await ensureKey(); if(!key)return;
+    const j=await (await fetch(API("/api/events/"+b.dataset.del+"?key="+encodeURIComponent(key)),{method:"DELETE"})).json();
     if(j&&j.ok===false){keyFail(j.msg||"删除失败");return;}
     toast("已删除");
-    EVENTS=await (await fetch(API("/api/events"))).json();fillHotList();loadEvents();loadStandards();SUMMARY=[];});
+    EVENTS=await (await fetch(API("/api/events"))).json();fillHotList();loadEvents();loadStandards();SUMMARY=[];loadPending();
+  });
 }
+
+// ---------- 修改已有记分记录（编辑 / 删除均需验证身份）----------
+let evEditId=null, evCheck={v:"日常监督检查"}, evType={v:"扣分"};
+document.querySelectorAll("#ev_check button").forEach(b=>b.onclick=()=>{
+  document.querySelectorAll("#ev_check button").forEach(x=>x.classList.remove("on"));
+  b.classList.add("on"); evCheck.v=b.dataset.v;});
+document.querySelectorAll("#ev_type button").forEach(b=>b.onclick=()=>{
+  document.querySelectorAll("#ev_type button").forEach(x=>x.classList.remove("on"));
+  b.classList.add("on"); evType.v=b.dataset.v; fillEvClauses();});
+function fillEvClauses(){
+  const sel=$("#ev_clause"); if(!sel)return; sel.innerHTML="";
+  STDS.filter(s=>s.type===evType.v||(evType.v==="扣分"&&s.type==="否决项")).forEach(s=>{
+    const o=document.createElement("option");o.value=s.code;
+    o.textContent=s.code+" "+s.item+(s.type==="否决项"?"（否决项）":"");sel.appendChild(o);});
+}
+function updateEvClauseHint(){
+  const s=STDS.find(x=>String(x.code)===String($("#ev_clause").value)), vb=$("#ev_value");
+  if(!s){vb.readOnly=false;vb.style.background="";$("#ev_clause_hint").textContent="选择条款后显示评分标准";return;}
+  const veto=s.type==="否决项";
+  $("#ev_clause_hint").innerHTML=esc("【"+s.category+"】"+s.item+"："+s.criteria)
+    +(veto?'<br><b style="color:#c0392b">⚠ 否决项：一次记 −50 分并直接定 D 级</b>':"");
+  if(veto){vb.value=50;vb.readOnly=true;vb.style.background="#f4f6f9";}
+  else{vb.readOnly=false;vb.style.background="";}
+}
+$("#ev_clause").onchange=updateEvClauseHint;
+function openEvEdit(id){
+  const e=EVENTS.find(x=>String(x.id)===String(id)); if(!e)return;
+  evEditId=e.id;
+  evCheck.v=e.check_type||"日常监督检查";
+  evType.v=e.score_type==="加分"?"加分":"扣分";
+  $("#ev_unit").textContent="单位："+(e.unit_name||"")+"（单位不可修改）";
+  $("#ev_date").value=e.date||"";
+  $("#ev_reason").value=e.reason||"";
+  $("#ev_recorder").value=e.recorder||"";
+  fillEvClauses();
+  $("#ev_clause").value=String(e.clause_code);
+  $("#ev_value").value=e.value;
+  document.querySelectorAll("#ev_check button").forEach(x=>x.classList.toggle("on",x.dataset.v===evCheck.v));
+  document.querySelectorAll("#ev_type button").forEach(x=>x.classList.toggle("on",x.dataset.v===evType.v));
+  updateEvClauseHint();
+  $("#ev_err").textContent="";
+  $("#evmask").classList.add("on");
+}
+function closeEvEdit(){$("#evmask").classList.remove("on");evEditId=null;}
+$("#ev_cancel").onclick=closeEvEdit;
+$("#evmask").onclick=e=>{if(e.target.id==="evmask")closeEvEdit();};
+$("#ev_ok").onclick=async()=>{
+  if(evEditId==null)return;
+  const val=parseFloat($("#ev_value").value);
+  if(!$("#ev_date").value){$("#ev_err").textContent="请选择日期";return;}
+  if(!(val>0)){$("#ev_err").textContent="分值需大于0";return;}
+  const key=await ensureKey(); if(!key)return;
+  const j=await (await fetch(API("/api/events/"+evEditId),{method:"PUT",headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({key,date:$("#ev_date").value,check_type:evCheck.v,score_type:evType.v,
+      clause_code:$("#ev_clause").value,value:val,reason:$("#ev_reason").value,recorder:$("#ev_recorder").value})})).json();
+  if(!j.ok){keyFail(j.msg||"保存失败");return;}
+  closeEvEdit(); toast("已保存修改 ✓");
+  EVENTS=await (await fetch(API("/api/events"))).json();fillHotList();loadEvents();loadStandards();SUMMARY=[];loadPending();
+};
 
 function eventsOfClause(code){return EVENTS.filter(e=>String(e.clause_code)===String(code));}
 // 被记分的单位家数（同一单位多条记录只算一家）
@@ -1062,14 +1188,17 @@ function renderSummary(){
 }
 
 async function loadQuarterly(){
-  const data=await (await fetch(API("/api/quarterly?q="+encodeURIComponent(qSel.v)))).json();
+  // 只读模式：服务端即隐去违法违规事实（facts 为空），避免接口直接取数泄露
+  const url="/api/quarterly?q="+encodeURIComponent(qSel.v)+(UNLOCKED?"":"&redact=1");
+  const data=await (await fetch(API(url))).json();
   const tb=$("#q_tbl tbody"); tb.innerHTML="";
   let dsum=0;
   data.forEach(u=>{dsum+=u.deduct||0;
     const tr=document.createElement("tr");
     const _p=String(u.phone||"").trim(), _a=String(u.office||"").trim();
+    const facts=UNLOCKED?(u.facts||"—"):'<span class="hint">🔒 验证身份后可见</span>';
     tr.innerHTML=`<td>${esc(u.name)}<br>${_a?`<a href="#" data-addr="${esc(_a)}" data-name="${esc(u.name)}" style="font-size:12px;color:#5b6675;text-decoration:none;border-bottom:1px dashed #cdd5e0">${esc(_a)}</a>`:""}<br>联系人：${esc(u.contact||"—")}${_p?` · <a href="tel:${esc(_p)}" data-tel="${esc(_p)}">${esc(_p)}</a>`:""}</td>
-      <td>${esc(u.facts||"—")}${u.veto==="是"?'<br><span class="pill tag-veto">否决项·直接D级</span>':""}</td>
+      <td>${facts}${u.veto==="是"?'<br><span class="pill tag-veto">否决项·直接D级</span>':""}</td>
       <td class="neg">${u.deduct||0}</td>`;
     tb.appendChild(tr);});
   if(!data.length)tb.innerHTML='<tr><td colspan="3" class="hint">本季度暂无记分记录</td></tr>';
